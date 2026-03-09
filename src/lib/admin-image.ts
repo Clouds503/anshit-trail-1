@@ -5,6 +5,7 @@ export interface GenerateImageOptions {
   width?: number;
   height?: number;
   model?: string;
+  provider?: "pollinations";
   uploadToCloudinary?: boolean;
 }
 
@@ -82,7 +83,8 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
     prompt,
     width: options.width || 1200,
     height: options.height || 630,
-    model: options.model || "gemini-2.5-flash-image",
+    model: options.model || "flux",
+    provider: options.provider || "pollinations",
     upload_to_cloudinary: options.uploadToCloudinary !== false,
     best_of: 1,
   };

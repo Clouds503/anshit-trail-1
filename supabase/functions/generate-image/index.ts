@@ -1,13 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { uploadImageBytesToCloudinary } from "../_shared/cloudinary.ts";
-import { createServiceClient, getEnv } from "../_shared/supabase.ts";
+import { createServiceClient } from "../_shared/supabase.ts";
 import {
   BudgetError,
   enforceRateLimitOrThrow,
-  enforceTokenBudgetOrThrow,
   resolveCallerIdentity,
 } from "../_shared/ai-budget.ts";
-import { GeminiProviderError, generateGeminiImage } from "../_shared/gemini-image.ts";
+import { buildPollinationsImageUrl } from "../_shared/pollinations.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,18 +18,12 @@ const RATE_LIMITS = {
   rpd: 20,
 };
 
-const TOKEN_LIMITS = {
-  tpm: 250_000,
-};
-
 const WINDOW_SECONDS = {
   rpm: 60,
   rpd: 86_400,
-  tpm: 3_600,
 };
 
-const TOKEN_ESTIMATE_PER_IMAGE = 1_200;
-const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
+const DEFAULT_POLLINATIONS_MODEL = "flux";
 
 class HttpError extends Error {
   status: number;
@@ -161,14 +154,19 @@ function buildLowCostImagePrompt(userPrompt: string, contextLine: string): strin
   );
 }
 
-function normalizeRequestedModel(bodyModel: unknown): string | null {
-  const raw = `${bodyModel || ""}`.trim();
-  if (!raw) return null;
-  if (raw.toLowerCase().startsWith("gemini-")) return raw;
+function normalizeRequestedProvider(provider: unknown): "pollinations" | null {
+  const raw = `${provider || ""}`.trim().toLowerCase();
+  if (raw === "pollinations") return raw;
   return null;
 }
 
-async function enforceImageBudgets(supabase: any, callerKey: string, estimatedTokens: number): Promise<void> {
+function normalizePollinationsModel(model: unknown): string {
+  const raw = `${model || ""}`.trim().toLowerCase();
+  if (!raw) return DEFAULT_POLLINATIONS_MODEL;
+  return raw;
+}
+
+async function enforceRequestBudgets(supabase: any, callerKey: string): Promise<void> {
   const globalPrefix = "generate-image:global";
   const callerPrefix = `generate-image:${callerKey}`;
 
@@ -176,18 +174,15 @@ async function enforceImageBudgets(supabase: any, callerKey: string, estimatedTo
   await enforceRateLimitOrThrow(supabase, `${globalPrefix}:rpd`, RATE_LIMITS.rpd, WINDOW_SECONDS.rpd);
   await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpm`, RATE_LIMITS.rpm, WINDOW_SECONDS.rpm);
   await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpd`, RATE_LIMITS.rpd, WINDOW_SECONDS.rpd);
-
-  await enforceTokenBudgetOrThrow(supabase, `${globalPrefix}:tpm`, TOKEN_LIMITS.tpm, estimatedTokens, WINDOW_SECONDS.tpm);
-  await enforceTokenBudgetOrThrow(supabase, `${callerPrefix}:tpm`, TOKEN_LIMITS.tpm, estimatedTokens, WINDOW_SECONDS.tpm);
 }
 
-async function enforceTokenDelta(supabase: any, callerKey: string, extraTokens: number): Promise<void> {
-  if (extraTokens <= 0) return;
-  const globalPrefix = "generate-image:global";
-  const callerPrefix = `generate-image:${callerKey}`;
-
-  await enforceTokenBudgetOrThrow(supabase, `${globalPrefix}:tpm`, TOKEN_LIMITS.tpm, extraTokens, WINDOW_SECONDS.tpm);
-  await enforceTokenBudgetOrThrow(supabase, `${callerPrefix}:tpm`, TOKEN_LIMITS.tpm, extraTokens, WINDOW_SECONDS.tpm);
+function bytesToBase64(bytes: Uint8Array): string {
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 
 serve(async (req) => {
@@ -204,11 +199,23 @@ serve(async (req) => {
 
     if (!prompt) throw new HttpError(400, "prompt is required");
 
-    const requestedModel = normalizeRequestedModel(body?.model);
-    const model = requestedModel || `${Deno.env.get("GEMINI_IMAGE_MODEL") || DEFAULT_GEMINI_IMAGE_MODEL}`.trim();
-    if (!model) throw new HttpError(500, "Gemini image model is not configured.");
+    const pollinationsModel = normalizePollinationsModel(body?.model);
+    const POLLINATIONS_API_KEY =
+      Deno.env.get("POLLINATION_API_KEY") ||
+      Deno.env.get("POLLINATIONS_API_KEY") ||
+      Deno.env.get("POLLINATION_KEY") ||
+      "";
+    const requestedProvider = normalizeRequestedProvider(body?.provider);
+    const configuredProvider = normalizeRequestedProvider(Deno.env.get("IMAGE_PROVIDER"));
+    const provider = requestedProvider || configuredProvider || "pollinations";
 
-    const GEMINI_API_KEY = getEnv("GEMINI_API_KEY");
+    if (provider !== "pollinations") {
+      throw new HttpError(400, "Only provider='pollinations' is supported.");
+    }
+    if (!POLLINATIONS_API_KEY) {
+      throw new HttpError(500, "POLLINATION_API_KEY is not configured.");
+    }
+
     const CLOUD_NAME = Deno.env.get("CLOUDINARY_CLOUD_NAME") || "";
     const UPLOAD_PRESET = Deno.env.get("CLOUDINARY_UPLOAD_PRESET") || "";
     if (uploadToCdn && (!CLOUD_NAME || !UPLOAD_PRESET)) {
@@ -219,7 +226,7 @@ serve(async (req) => {
     const callerIdentity = resolveCallerIdentity(req);
     const callerKey = callerIdentity.key;
 
-    await enforceImageBudgets(supabase, callerKey, TOKEN_ESTIMATE_PER_IMAGE);
+    await enforceRequestBudgets(supabase, callerKey);
 
     const promptContext = extractPromptContext((body || {}) as Record<string, unknown>);
     const inferredComponents = inferDomainComponents(promptContext);
@@ -228,27 +235,57 @@ serve(async (req) => {
     const contextLine = visualComponents.length ? `Use visual components: ${visualComponents.join(", ")}.` : "";
     const finalPrompt = buildLowCostImagePrompt(prompt, contextLine);
 
-    const gemini = await generateGeminiImage({
-      apiKey: GEMINI_API_KEY,
-      model,
-      prompt: finalPrompt,
-      width,
-      height,
-      maxRetries: 1,
-    });
-
-    const effectiveTokens = Math.max(TOKEN_ESTIMATE_PER_IMAGE, Number(gemini.usageTokens || 0));
-    const extraTokens = Math.max(0, effectiveTokens - TOKEN_ESTIMATE_PER_IMAGE);
-    await enforceTokenDelta(supabase, callerKey, extraTokens);
-
     let url = "";
     let uploadedToCloudinary = false;
+    const effectiveTokens = 0;
+    let modelUsed = "";
+    let usageMetadata: Record<string, unknown> = {};
+
+    const pollinationsUrl = buildPollinationsImageUrl(finalPrompt, {
+      width,
+      height,
+      model: pollinationsModel,
+      nologo: true,
+      seed: Math.floor(Math.random() * 1000000000),
+      apiKey: POLLINATIONS_API_KEY,
+    });
+
+    const probe = await fetch(pollinationsUrl);
+    if (!probe.ok) {
+      const raw = await probe.text().catch(() => "");
+      let message = raw;
+      try {
+        const parsed = raw ? JSON.parse(raw) : null;
+        const parsedMessage =
+          parsed?.error?.message?.toString?.() ||
+          parsed?.error?.toString?.() ||
+          parsed?.message?.toString?.();
+        if (parsedMessage) message = parsedMessage;
+      } catch {
+        // Keep raw text.
+      }
+      const status = probe.status === 402 ? 429 : 502;
+      throw new HttpError(status, `Pollinations upstream error: ${message || `status ${probe.status}`}`);
+    }
+
+    const rawContentType = (probe.headers.get("content-type") || "").trim().toLowerCase();
+    const mimeType = rawContentType.split(";")[0] || "image/png";
+    if (!mimeType.includes("image")) {
+      const raw = await probe.text().catch(() => "");
+      throw new HttpError(502, `Pollinations did not return an image payload: ${raw || "unknown response"}`);
+    }
+
+    const imageBytes = new Uint8Array(await probe.arrayBuffer());
+    if (!imageBytes.length) throw new HttpError(502, "Pollinations returned an empty image payload.");
+
+    modelUsed = pollinationsModel;
+    usageMetadata = { source: "pollinations" };
 
     if (uploadToCdn) {
-      url = await uploadImageBytesToCloudinary(gemini.imageBytes, gemini.mimeType, CLOUD_NAME, UPLOAD_PRESET);
+      url = await uploadImageBytesToCloudinary(imageBytes, mimeType, CLOUD_NAME, UPLOAD_PRESET);
       uploadedToCloudinary = true;
     } else {
-      url = `data:${gemini.mimeType};base64,${gemini.base64Data}`;
+      url = `data:${mimeType};base64,${bytesToBase64(imageBytes)}`;
     }
 
     return new Response(
@@ -257,13 +294,14 @@ serve(async (req) => {
         url,
         candidates: [url],
         uploaded_to_cloudinary: uploadedToCloudinary,
-        provider: "gemini",
-        model: gemini.model,
+        provider,
+        model: modelUsed,
         usage_tokens: effectiveTokens,
-        usage_metadata: gemini.usageMetadata,
+        usage_metadata: usageMetadata,
         prompt: finalPrompt,
         visual_components_used: visualComponents,
         requested_model: body?.model || null,
+        requested_provider: body?.provider || null,
         best_of_requested: requestedBestOf,
         best_of_effective: bestOf,
         limiter: {
@@ -271,7 +309,6 @@ serve(async (req) => {
           limits: {
             rpm: RATE_LIMITS.rpm,
             rpd: RATE_LIMITS.rpd,
-            tpm: TOKEN_LIMITS.tpm,
           },
           window_seconds: WINDOW_SECONDS,
         },
@@ -282,13 +319,6 @@ serve(async (req) => {
     if (err instanceof BudgetError) {
       return new Response(JSON.stringify({ error: err.message }), {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (err instanceof GeminiProviderError) {
-      return new Response(JSON.stringify({ error: `Gemini upstream error: ${err.message}` }), {
-        status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
