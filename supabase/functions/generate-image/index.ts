@@ -204,15 +204,25 @@ async function hasReadableText(url: string, groqApiKey: string): Promise<boolean
     return parsed?.has_text === true;
   };
 
+  let scout: boolean | null = null;
+  let maverick: boolean | null = null;
+
   try {
-    const scout = await detectWithModel("meta-llama/llama-4-scout-17b-16e-instruct");
-    if (scout) return true;
-    const maverick = await detectWithModel("meta-llama/llama-4-maverick-17b-128e-instruct");
-    return maverick;
+    scout = await detectWithModel("meta-llama/llama-4-scout-17b-16e-instruct");
   } catch {
-    // Degrade gracefully when vision checks are rate-limited/unavailable.
-    return false;
+    // Keep going with the second model.
   }
+
+  try {
+    maverick = await detectWithModel("meta-llama/llama-4-maverick-17b-128e-instruct");
+  } catch {
+    // Keep going with available signal.
+  }
+
+  // Reject only on strong agreement to reduce false positives.
+  if (scout === true && maverick === true) return true;
+  if (scout === null && maverick === null) return false;
+  return false;
 }
 
 function candidatePrompt(basePrompt: string, attempt: number): string {
@@ -277,6 +287,45 @@ function randomSeed() {
   return Math.floor(Math.random() * 1000000000);
 }
 
+async function getAvailablePollinationsImageModels(): Promise<string[]> {
+  try {
+    const res = await fetch("https://image.pollinations.ai/models");
+    if (!res.ok) return [];
+    const data = await res.json().catch(() => null);
+    if (!Array.isArray(data)) return [];
+    return dedupeStrings(
+      data
+        .map((item) => toCleanString(item, 50).toLowerCase())
+        .filter(Boolean),
+      12,
+    );
+  } catch {
+    return [];
+  }
+}
+
+function buildModelPool(requestedModel: string, availableModels: string[]): string[] {
+  const preferredFallbacks = ["turbo", "sana", "zimage"];
+  const requested = toCleanString(requestedModel, 50).toLowerCase();
+
+  if (availableModels.length === 0) {
+    return dedupeStrings([requested || "flux", ...preferredFallbacks], 6);
+  }
+
+  const available = new Set(availableModels.map((m) => m.toLowerCase()));
+  const pool: string[] = [];
+
+  if (requested && available.has(requested)) pool.push(requested);
+  for (const model of preferredFallbacks) {
+    if (available.has(model)) pool.push(model);
+  }
+  if (pool.length === 0) {
+    pool.push(...availableModels.slice(0, 3));
+  }
+
+  return dedupeStrings(pool, 6);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -294,6 +343,9 @@ serve(async (req) => {
     const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY") || "";
     const CLOUD_NAME = Deno.env.get("CLOUDINARY_CLOUD_NAME") || "";
     const UPLOAD_PRESET = Deno.env.get("CLOUDINARY_UPLOAD_PRESET") || "";
+    const availableModels = await getAvailablePollinationsImageModels();
+    const modelPool = buildModelPool(model, availableModels);
+    const modelsTried = new Set<string>();
 
     const promptContext = extractPromptContext(body || {});
     const inferredComponents = inferDomainComponents(promptContext);
@@ -306,14 +358,16 @@ serve(async (req) => {
 
     const candidates: string[] = [];
     let uploadedToCloudinary = false;
-    const maxAttempts = Math.max(bestOf * 6, 12);
+    const maxAttempts = Math.max(bestOf * 12, 24);
 
     for (let attempt = 0; attempt < maxAttempts && candidates.length < bestOf; attempt++) {
+      const selectedModel = modelPool[attempt % modelPool.length] || model;
+      modelsTried.add(selectedModel);
       const promptVariant = candidatePrompt(enhancedPrompt, attempt % 3);
       let candidate = buildPollinationsImageUrl(promptVariant, {
         width,
         height,
-        model,
+        model: selectedModel,
         nologo: true,
         seed: randomSeed(),
       });
@@ -347,11 +401,13 @@ serve(async (req) => {
         .filter(Boolean)
         .join(" ");
 
-      for (let attempt = 0; attempt < 12 && candidates.length < 1; attempt++) {
+      for (let attempt = 0; attempt < 24 && candidates.length < 1; attempt++) {
+        const selectedModel = modelPool[attempt % modelPool.length] || model;
+        modelsTried.add(selectedModel);
         let fallbackCandidate = buildPollinationsImageUrl(safePrompt, {
           width,
           height,
-          model,
+          model: selectedModel,
           nologo: true,
           seed: randomSeed(),
         });
@@ -368,7 +424,9 @@ serve(async (req) => {
         const usable = await isUsableImage(fallbackCandidate);
         if (!usable) continue;
         const containsText = await hasReadableText(fallbackCandidate, GROQ_API_KEY);
-        if (!containsText) candidates.push(fallbackCandidate);
+        if (!containsText) {
+          candidates.push(fallbackCandidate);
+        }
       }
     }
 
@@ -386,6 +444,9 @@ serve(async (req) => {
         prompt: enhancedPrompt,
         prompt_rewritten_by_groq: groqPrompt,
         visual_components_used: visualComponents,
+        requested_model: model,
+        model_pool_used: modelPool,
+        models_tried: Array.from(modelsTried),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
