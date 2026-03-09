@@ -24,15 +24,15 @@ const ROUTE_META_DEFAULTS: Array<{
 }> = [
   {
     matcher: /^\/$/,
-    title: "Clouds Trail - #1 IT Training Institute",
+    title: "Salesforce & Workday Training | Clouds Trail IT Institute",
     description:
-      "Clouds Trail offers industry-leading IT certification programs with 100% placement support. Master Cloud, AI, DevOps and more.",
+      "Clouds Trail is a practical salesforce institute and IT institute for Salesforce Admin, Salesforce Developer, Salesforce LWC, Salesforce Omni Studio, and Workday training.",
   },
   {
     matcher: /^\/programs$/,
-    title: "IT Training Programs | Clouds Trail",
+    title: "Salesforce Admin, Developer & Workday Training Programs",
     description:
-      "Explore industry-aligned IT training programs across cloud, devops, analytics, development, and cybersecurity with practical mentorship.",
+      "Explore program tracks for salesforce admin, salesforce developer, sales force foundations, salesforce lwc, salesforce omni studio, and workday training.",
   },
   {
     matcher: /^\/course\/[^/]+$/,
@@ -42,9 +42,9 @@ const ROUTE_META_DEFAULTS: Array<{
   },
   {
     matcher: /^\/blog$/,
-    title: "Tech Blog | Clouds Trail",
+    title: "Salesforce and Workday Blog | Clouds Trail",
     description:
-      "Read practical guides, career insights, and implementation-focused articles for cloud, devops, data, cybersecurity, and software development.",
+      "Read practical Clouds Trail guides for Salesforce Admin, Salesforce Developer, Salesforce LWC, Salesforce Omni Studio, and Workday training careers.",
   },
   {
     matcher: /^\/blog\/[^/]+$/,

@@ -20,6 +20,9 @@ const parsePositiveInt = (value: unknown, fallback: number) => {
   return Math.max(12, Math.min(180, Math.round(parsed)));
 };
 
+const fallbackBrandDescription =
+  "Clouds Trail is a salesforce institute and IT institute offering Salesforce Admin, Salesforce Developer, sales force basics, Salesforce LWC, Salesforce Omni Studio, and Workday training.";
+
 const Footer = () => {
   const { data: contactInfo } = useQuery({
     queryKey: ["contact_info"],
@@ -67,12 +70,8 @@ const Footer = () => {
       return {
         siteTitle: `${map.site_title || "Clouds Trail"}`.trim() || "Clouds Trail",
         siteSubtitle: `${map.site_subtitle || "#1 IT Training Institute"}`.trim() || "#1 IT Training Institute",
-        siteDescription:
-          `${map.site_description || "India's leading IT training institute with 100% placement assistance."}`.trim() ||
-          "India's leading IT training institute with 100% placement assistance.",
-        footerBio:
-          `${map.footer_bio || "India's leading IT training institute with 100% placement assistance."}`.trim() ||
-          "India's leading IT training institute with 100% placement assistance.",
+        siteDescription: `${map.site_description || fallbackBrandDescription}`.trim() || fallbackBrandDescription,
+        footerBio: `${map.footer_bio || fallbackBrandDescription}`.trim() || fallbackBrandDescription,
         footerLogoHeight: parsePositiveInt(map.footer_logo_height, 40),
       } as FooterBrandingSettings;
     },
@@ -84,7 +83,7 @@ const Footer = () => {
   const footerCols = footerSections ? Math.max(3, Math.min((footerSections.length || 0) + 2, 6)) : 4;
   const brandTitle = footerBranding?.siteTitle || "Clouds Trail";
   const brandSubtitle = footerBranding?.siteSubtitle || "#1 IT Training Institute";
-  const brandDescription = footerBranding?.siteDescription || "India's leading IT training institute with 100% placement assistance.";
+  const brandDescription = footerBranding?.siteDescription || fallbackBrandDescription;
   const footerBio = footerBranding?.footerBio || brandDescription;
   const footerLogoHeight = footerBranding?.footerLogoHeight || 40;
 

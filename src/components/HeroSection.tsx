@@ -209,11 +209,11 @@ const HeroSection = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight mb-3">
+                  <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight mb-3">
                     {slides[currentSlide]?.title}
                     <br />
                     <span className="text-primary">{slides[currentSlide]?.subtitle}</span>
-                  </h1>
+                  </h2>
                   <p className="text-white/70 text-lg mb-6 max-w-md">
                     Industry-leading certification programs with guaranteed placement support.
                   </p>
@@ -247,11 +247,11 @@ const HeroSection = () => {
             <div className="container">
               <div className="max-w-xl">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                  <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight mb-3">
+                  <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight mb-3">
                     Launch Your <span className="text-primary">Tech Career</span>
                     <br />
                     with Expert Training
-                  </h1>
+                  </h2>
                   <p className="text-white/70 text-lg mb-6 max-w-md">
                     Industry-leading certification programs with 100% placement support.
                   </p>
@@ -325,11 +325,11 @@ const HeroContent = ({ programs }: { programs: string[] }) => {
       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold mb-5 border border-primary/10">
         Trusted by 25,000+ Students
       </div>
-      <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground leading-[1.15] mb-4">
+      <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground leading-[1.15] mb-4">
         Launch Your <span className="text-primary">Tech Career</span> with Expert Training
-      </h1>
+      </h2>
       <p className="text-muted-foreground text-lg mb-5 leading-relaxed max-w-lg">
-        Industry-leading certification programs in Salesforce, DevOps, Digital Marketing and more with guaranteed placement support.
+        Industry-leading certification programs in Salesforce and Workday training with guaranteed placement support from Clouds Trail.
       </p>
       <ul className="space-y-2 mb-6">
         {highlights.map((h) => (
