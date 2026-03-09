@@ -91,11 +91,11 @@ const Footer = () => {
     <footer className="bg-secondary text-secondary-foreground">
       <div className="container py-10 md:py-14">
         <div
-          className="grid grid-cols-2 gap-6 md:gap-10 md:[grid-template-columns:repeat(var(--footer-cols),minmax(0,1fr))]"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 md:[grid-template-columns:repeat(var(--footer-cols),minmax(0,1fr))]"
           style={{ "--footer-cols": String(footerCols) } as CSSProperties}
         >
-          <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="inline-block mb-3 md:mb-4">
+          <div className="sm:col-span-2 md:col-span-1 text-center sm:text-left">
+            <Link to="/" className="inline-flex sm:inline-block justify-center mb-3 md:mb-4">
               <img
                 src={logo}
                 alt={brandTitle}
@@ -106,14 +106,14 @@ const Footer = () => {
             <p className="text-secondary-foreground/50 text-[10px] md:text-xs uppercase tracking-wide mb-1.5">
               {brandSubtitle}
             </p>
-            <p className="text-secondary-foreground/60 text-xs md:text-sm leading-relaxed max-w-sm">
+            <p className="text-secondary-foreground/60 text-xs md:text-sm leading-relaxed max-w-sm mx-auto sm:mx-0">
               {footerBio || brandDescription}
             </p>
           </div>
 
           {footerSections ? (
             footerSections.map((section) => (
-              <div key={section.id}>
+              <div key={section.id} className="text-center sm:text-left">
                 <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">{section.title}</h4>
                 <ul className="space-y-1.5 md:space-y-2.5">
                   {section.links.map((link: any) => (
@@ -131,7 +131,7 @@ const Footer = () => {
             ))
           ) : (
             <>
-              <div>
+              <div className="text-center sm:text-left">
                 <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Quick Links</h4>
                 <ul className="space-y-1.5 md:space-y-2.5">
                   <li><Link to="/about" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">About Us</Link></li>
@@ -139,7 +139,7 @@ const Footer = () => {
                   <li><Link to="/contact" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Contact</Link></li>
                 </ul>
               </div>
-              <div>
+              <div className="text-center sm:text-left">
                 <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Legal</h4>
                 <ul className="space-y-1.5 md:space-y-2.5">
                   <li><Link to="/terms" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Terms & Conditions</Link></li>
@@ -150,14 +150,14 @@ const Footer = () => {
             </>
           )}
 
-          <div className="col-span-2 sm:col-span-1">
+          <div className="sm:col-span-2 md:col-span-1 text-center sm:text-left">
             <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Contact</h4>
             <ul className="space-y-2 md:space-y-3">
-              <li className="flex items-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 mt-0.5 text-primary shrink-0" />{address}</li>
-              <li className="flex items-center gap-2 text-xs md:text-sm text-secondary-foreground/60"><Phone className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{phone}</li>
-              <li className="flex items-center gap-2 text-xs md:text-sm text-secondary-foreground/60"><Mail className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{email}</li>
+              <li className="flex items-start sm:items-start justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 mt-0.5 text-primary shrink-0" />{address}</li>
+              <li className="flex items-center justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><Phone className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{phone}</li>
+              <li className="flex items-center justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><Mail className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{email}</li>
             </ul>
-            <SocialLinks placement="footer" variant="footer" className="mt-3 md:mt-5" />
+            <SocialLinks placement="footer" variant="footer" className="mt-3 md:mt-5 justify-center sm:justify-start" />
           </div>
         </div>
       </div>

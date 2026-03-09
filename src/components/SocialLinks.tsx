@@ -30,6 +30,19 @@ interface SocialLinksProps {
   className?: string;
 }
 
+const floatingColorMap: Record<string, string> = {
+  facebook: "from-blue-600 via-blue-500 to-cyan-400",
+  instagram: "from-pink-500 via-rose-500 to-orange-400",
+  linkedin: "from-sky-600 via-blue-600 to-indigo-500",
+  youtube: "from-red-600 via-red-500 to-rose-400",
+  github: "from-slate-700 via-slate-600 to-slate-500",
+  twitter: "from-sky-500 via-cyan-500 to-blue-500",
+  twitterx: "from-slate-700 via-slate-600 to-slate-500",
+  x: "from-slate-700 via-slate-600 to-slate-500",
+  telegram: "from-sky-500 via-cyan-500 to-blue-500",
+  send: "from-sky-500 via-cyan-500 to-blue-500",
+};
+
 const iconMap: Record<string, LucideIcon> = {
   facebook: Facebook,
   twitter: Twitter,
@@ -54,6 +67,18 @@ const toExternalUrl = (value: string) =>
 
 const resolveIcon = (platform: string, iconName: string): LucideIcon =>
   iconMap[normalizeToken(iconName)] || iconMap[normalizeToken(platform)] || Globe;
+
+const resolveFloatingPalette = (platform: string, iconName: string) => {
+  const platformToken = normalizeToken(platform);
+  const iconToken = normalizeToken(iconName);
+  return (
+    floatingColorMap[platformToken] ||
+    floatingColorMap[iconToken] ||
+    "from-primary via-sky-500 to-cyan-400"
+  );
+};
+
+const compactTitle = (value: string) => value.trim().split(/\s+/)[0] || "Social";
 
 const SocialLinks = ({ placement, variant = "footer", className }: SocialLinksProps) => {
   const { data: links } = useQuery({
@@ -80,8 +105,8 @@ const SocialLinks = ({ placement, variant = "footer", className }: SocialLinksPr
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2",
-        variant === "floating3d" ? "justify-center gap-4 [transform-style:preserve-3d]" : "",
+        "flex flex-wrap items-center gap-2.5 sm:gap-3",
+        variant === "floating3d" ? "justify-center gap-3 sm:gap-4 [transform-style:preserve-3d]" : "",
         className,
       )}
     >
@@ -89,18 +114,20 @@ const SocialLinks = ({ placement, variant = "footer", className }: SocialLinksPr
         const Icon = resolveIcon(link.platform, link.icon);
         const title = link.platform?.replace(/[_-]/g, " ") || "Social";
         const href = toExternalUrl(link.url);
+        const floatingPalette = resolveFloatingPalette(link.platform, link.icon);
+        const shortTitle = compactTitle(title);
         const baseClass = cn(
-          "inline-flex items-center justify-center transition-all duration-300",
-          variant === "header" && "h-8 w-8 rounded-full border border-primary/20 text-muted-foreground hover:border-primary/50 hover:text-primary",
-          variant === "footer" && "h-9 w-9 rounded-full border border-secondary-foreground/15 text-secondary-foreground/70 hover:text-primary hover:border-primary/40",
+          "inline-flex items-center justify-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          variant === "header" && "h-8 w-8 rounded-full border border-primary/20 text-muted-foreground hover:-translate-y-0.5 hover:border-primary/50 hover:text-primary",
+          variant === "footer" && "h-9 w-9 rounded-full border border-secondary-foreground/15 text-secondary-foreground/70 hover:-translate-y-0.5 hover:text-primary hover:border-primary/40",
           variant === "contact" && "h-10 w-10 rounded-full border border-primary/20 bg-accent/20 text-foreground hover:-translate-y-0.5 hover:border-primary/60 hover:text-primary",
           variant === "floating3d" &&
-            "h-14 w-14 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-accent text-primary-foreground shadow-[0_16px_30px_-16px_hsl(var(--primary)/0.9)] border border-primary-foreground/20 hover:scale-105",
+            "group relative isolate h-12 w-12 overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br text-primary-foreground shadow-[0_14px_28px_-16px_rgba(2,132,199,0.95)] hover:shadow-[0_20px_38px_-18px_rgba(2,132,199,0.95)] sm:h-14 sm:w-14 md:h-16 md:w-16",
         );
         const iconClass = cn(
           "h-4 w-4",
           variant === "contact" ? "h-5 w-5" : "",
-          variant === "floating3d" ? "h-6 w-6" : "",
+          variant === "floating3d" ? "h-5 w-5 sm:h-6 sm:w-6" : "",
         );
 
         if (variant === "floating3d") {
@@ -111,13 +138,21 @@ const SocialLinks = ({ placement, variant = "footer", className }: SocialLinksPr
               target="_blank"
               rel="noreferrer noopener"
               title={title}
-              className={baseClass}
+              className={cn(baseClass, floatingPalette)}
               initial={{ y: 0, rotateX: -8 }}
               animate={{ y: [0, -8, 0], rotateZ: [0, index % 2 === 0 ? 2 : -2, 0] }}
               transition={{ duration: 3.2 + (index % 3) * 0.35, delay: index * 0.1, repeat: Infinity, ease: "easeInOut" }}
-              whileHover={{ y: -10, rotateY: 10 }}
+              whileHover={{ y: -8, rotateY: 8, rotateX: -4, scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
             >
-              <Icon className={iconClass} />
+              <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.36),transparent_58%)]" />
+              <span className="pointer-events-none absolute inset-x-3 top-1 h-px bg-white/50" />
+              <span className="relative z-10 flex flex-col items-center justify-center">
+                <Icon className={cn(iconClass, "drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]")} />
+                <span className="mt-1 hidden text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 sm:block">
+                  {shortTitle}
+                </span>
+              </span>
               <span className="sr-only">{title}</span>
             </motion.a>
           );

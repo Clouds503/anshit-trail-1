@@ -77,9 +77,9 @@ const Programs = () => {
               Clouds Trail offers a comprehensive portfolio of <span className="text-primary font-bold">industry-aligned training programs</span> designed to accelerate your career in technology and business. Our courses span Salesforce administration and development, Workday implementation, Cloud Computing, Data Science & AI, and specialized IT certifications.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-6 pt-4">
               <motion.div 
-                className="relative p-5 md:p-7 rounded-2xl bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/40 group hover:border-accent/70 transition-all overflow-hidden"
+                className="relative p-3 sm:p-5 md:p-7 rounded-2xl bg-gradient-to-br from-accent/30 to-accent/10 border-2 border-accent/40 group hover:border-accent/70 transition-all overflow-hidden"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-20 -top-20 w-40 h-40 bg-accent/20 rounded-full blur-2xl group-hover:blur-3xl transition-all" />
@@ -87,15 +87,15 @@ const Programs = () => {
                   <div className="w-12 h-12 rounded-lg bg-accent/40 group-hover:bg-accent/60 transition-colors flex items-center justify-center">
                     <CheckCircle className="w-6 h-6 text-accent-foreground" />
                   </div>
-                  <h3 className="font-black text-foreground text-base md:text-lg">Hands-On Learning</h3>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  <h3 className="font-black text-foreground text-sm md:text-lg">Hands-On Learning</h3>
+                  <p className="text-xs md:text-base text-muted-foreground leading-relaxed">
                     Each program combines <span className="font-bold text-primary">hands-on labs</span>, real-world projects, and mentorship from industry experts. We feature <span className="font-bold">best-selling courses</span> meticulously curated based on market demand.
                   </p>
                 </div>
               </motion.div>
 
               <motion.div 
-                className="relative p-5 md:p-7 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/40 group hover:border-primary/70 transition-all overflow-hidden"
+                className="relative p-3 sm:p-5 md:p-7 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/40 group hover:border-primary/70 transition-all overflow-hidden"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-20 -top-20 w-40 h-40 bg-primary/20 rounded-full blur-2xl group-hover:blur-3xl transition-all" />
@@ -103,8 +103,8 @@ const Programs = () => {
                   <div className="w-12 h-12 rounded-lg bg-primary/40 group-hover:bg-primary/60 transition-colors flex items-center justify-center">
                     <Zap className="w-6 h-6 text-primary-foreground" />
                   </div>
-                  <h3 className="font-black text-foreground text-base md:text-lg">Job-Ready Skills</h3>
-                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  <h3 className="font-black text-foreground text-sm md:text-lg">Job-Ready Skills</h3>
+                  <p className="text-xs md:text-base text-muted-foreground leading-relaxed">
                     Whether mastering Salesforce fundamentals or transitioning to AI/ML and Cloud Architecture, our programs provide <span className="font-bold text-primary">100% placement assistance</span> with job-ready expertise.
                   </p>
                 </div>
@@ -157,7 +157,7 @@ const Programs = () => {
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed">Discover our complete range of specialization tracks, technical modules, and advanced certifications tailored to elevate your expertise and achieve your career goals.</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-6">
               {remainingPrograms.map((program: any, i: number) => (
                 <Link to={`/course/${program.slug}`} key={program.id}>
                   <motion.div
@@ -168,7 +168,7 @@ const Programs = () => {
                     transition={{ duration: 0.3, delay: i * 0.05 }}
                     whileHover={{ y: -4 }}
                   >
-                    <div className="relative h-24 md:h-32 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
+                    <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
                       {program.image_url ? (
                         <img src={program.image_url} alt={program.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       ) : (
@@ -183,11 +183,11 @@ const Programs = () => {
                     </div>
                     <div className="flex-1 p-4 md:p-5 flex flex-col justify-between">
                       <div className="space-y-2">
-                        <h3 className="font-heading font-bold text-foreground text-sm md:text-base lg:text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">{program.title}</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2">{program.short_description || "Learn from industry experts"}</p>
+                        <h3 className="font-heading font-bold text-foreground text-[11px] sm:text-sm md:text-base lg:text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">{program.title}</h3>
+                        <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2">{program.short_description || "Learn from industry experts"}</p>
                       </div>
                       <div className="pt-3 mt-2 border-t border-border/50">
-                        <span className="text-xs md:text-sm font-semibold text-primary inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                        <span className="text-[10px] sm:text-xs md:text-sm font-semibold text-primary inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
                           Explore <ArrowRight className="h-4 w-4" />
                         </span>
                       </div>
@@ -215,58 +215,58 @@ const Programs = () => {
               <p className="text-base md:text-lg text-muted-foreground">We empower your success through industry-aligned education, expert mentorship, and guaranteed career outcomes</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
               <motion.div 
-                className="relative overflow-hidden p-5 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border-2 border-blue-200/50 dark:border-blue-800/30 group hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+                className="relative overflow-hidden p-3 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 border-2 border-blue-200/50 dark:border-blue-800/30 group hover:border-blue-300 dark:hover:border-blue-700 transition-all"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-12 -top-12 w-28 h-28 bg-blue-200/20 rounded-full blur-2xl group-hover:blur-xl transition-all" />
                 <div className="relative space-y-2 md:space-y-3">
                   <div className="text-3xl md:text-4xl">🏆</div>
-                  <h3 className="font-bold text-foreground text-sm md:text-base lg:text-lg">Practical, Job-Ready Education</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-bold text-foreground text-xs md:text-base lg:text-lg">Practical, Job-Ready Education</h3>
+                  <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
                     Every course is designed by industry practitioners who work directly in the technologies they teach, ensuring curriculum relevance to current market demands.
                   </p>
                 </div>
               </motion.div>
 
               <motion.div 
-                className="relative overflow-hidden p-5 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10 border-2 border-green-200/50 dark:border-green-800/30 group hover:border-green-300 dark:hover:border-green-700 transition-all"
+                className="relative overflow-hidden p-3 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10 border-2 border-green-200/50 dark:border-green-800/30 group hover:border-green-300 dark:hover:border-green-700 transition-all"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-12 -top-12 w-28 h-28 bg-green-200/20 rounded-full blur-2xl group-hover:blur-xl transition-all" />
                 <div className="relative space-y-2 md:space-y-3">
                   <div className="text-3xl md:text-4xl">💼</div>
-                  <h3 className="font-bold text-foreground text-sm md:text-base lg:text-lg">Proven Track Record</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-bold text-foreground text-xs md:text-base lg:text-lg">Proven Track Record</h3>
+                  <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
                     40,000+ trained professionals with 100% placement assistance and a proven track record of successful career transitions across top companies.
                   </p>
                 </div>
               </motion.div>
 
               <motion.div 
-                className="relative overflow-hidden p-5 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border-2 border-purple-200/50 dark:border-purple-800/30 group hover:border-purple-300 dark:hover:border-purple-700 transition-all"
+                className="relative overflow-hidden p-3 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-50/50 dark:from-purple-950/30 dark:to-purple-950/10 border-2 border-purple-200/50 dark:border-purple-800/30 group hover:border-purple-300 dark:hover:border-purple-700 transition-all"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-12 -top-12 w-28 h-28 bg-purple-200/20 rounded-full blur-2xl group-hover:blur-xl transition-all" />
                 <div className="relative space-y-2 md:space-y-3">
                   <div className="text-3xl md:text-4xl">🎓</div>
-                  <h3 className="font-bold text-foreground text-sm md:text-base lg:text-lg">Hands-On Learning Experience</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-bold text-foreground text-xs md:text-base lg:text-lg">Hands-On Learning Experience</h3>
+                  <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
                     Intensive hands-on labs, capstone projects, and 1-on-1 mentorship from certified professionals. We go beyond theory to build real expertise.
                   </p>
                 </div>
               </motion.div>
 
               <motion.div 
-                className="relative overflow-hidden p-5 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border-2 border-orange-200/50 dark:border-orange-800/30 group hover:border-orange-300 dark:hover:border-orange-700 transition-all"
+                className="relative overflow-hidden p-3 sm:p-6 md:p-7 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-50/50 dark:from-orange-950/30 dark:to-orange-950/10 border-2 border-orange-200/50 dark:border-orange-800/30 group hover:border-orange-300 dark:hover:border-orange-700 transition-all"
                 whileHover={{ y: -4 }}
               >
                 <div className="absolute -right-12 -top-12 w-28 h-28 bg-orange-200/20 rounded-full blur-2xl group-hover:blur-xl transition-all" />
                 <div className="relative space-y-2 md:space-y-3">
                   <div className="text-3xl md:text-4xl">🚀</div>
-                  <h3 className="font-bold text-foreground text-sm md:text-base lg:text-lg">Lifetime Support & Growth</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="font-bold text-foreground text-xs md:text-base lg:text-lg">Lifetime Support & Growth</h3>
+                  <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
                     Lifetime course access, continuous curriculum updates, and a vibrant alumni community for ongoing networking and career advancement.
                   </p>
                 </div>

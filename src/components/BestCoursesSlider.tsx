@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
@@ -24,6 +24,7 @@ interface BestCourse {
 const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: boolean }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(0);
 
   const { data: bestCourses = [] } = useQuery({
     queryKey: ["best_courses_slider"],
@@ -37,26 +38,64 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
     },
   });
 
-  const scroll = (direction: "left" | "right") => {
-    const newIndex = direction === "left" 
-      ? Math.max(0, currentIndex - 1)
-      : Math.min(bestCourses.length - 1, currentIndex + 1);
-    setCurrentIndex(newIndex);
+  const scrollToIndex = useCallback((idx: number, behavior: ScrollBehavior = "smooth") => {
+    const container = scrollContainerRef.current;
+    if (!container || bestCourses.length === 0) return;
 
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const cardWidth = container.offsetWidth < 768 
-        ? container.offsetWidth * 0.85 
-        : container.offsetWidth * 0.45;
-      const gap = 16;
-      const totalWidth = cardWidth + gap;
-      
-      container.scrollTo({
-        left: newIndex * totalWidth,
-        behavior: "smooth",
-      });
-    }
+    const nextIndex = ((idx % bestCourses.length) + bestCourses.length) % bestCourses.length;
+    const cardWidth =
+      container.offsetWidth < 640
+        ? container.offsetWidth * 0.82
+        : container.offsetWidth < 1024
+          ? container.offsetWidth * 0.52
+          : container.offsetWidth * 0.4;
+    const gap = 16;
+    const totalWidth = cardWidth + gap;
+
+    container.scrollTo({
+      left: nextIndex * totalWidth,
+      behavior,
+    });
+    setCurrentIndex(nextIndex);
+  }, [bestCourses.length]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (bestCourses.length < 2) return;
+    const newIndex =
+      direction === "left"
+        ? (currentIndex - 1 + bestCourses.length) % bestCourses.length
+        : (currentIndex + 1) % bestCourses.length;
+    scrollToIndex(newIndex);
   };
+
+  useEffect(() => {
+    if (bestCourses.length === 0) return;
+    setCurrentIndex((prev) => {
+      const normalized = prev % bestCourses.length;
+      requestAnimationFrame(() => scrollToIndex(normalized, "auto"));
+      return normalized;
+    });
+  }, [bestCourses.length, scrollToIndex]);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (bestCourses.length < 2) return;
+    const timer = window.setInterval(() => {
+      const next = (currentIndexRef.current + 1) % bestCourses.length;
+      scrollToIndex(next);
+    }, 3800);
+
+    return () => window.clearInterval(timer);
+  }, [bestCourses.length, scrollToIndex]);
+
+  useEffect(() => {
+    const onResize = () => scrollToIndex(currentIndex, "auto");
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [currentIndex, scrollToIndex]);
 
   if (bestCourses.length === 0) return null;
 
@@ -84,7 +123,7 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
           {/* Cards Scroll Container */}
           <div
             ref={scrollContainerRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth px-6 sm:px-0"
+            className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 sm:px-0"
             style={{ scrollBehavior: "smooth" }}
           >
             {bestCourses.map((item, idx) => {
@@ -96,8 +135,8 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
                   key={`${item.id}`}
                   className={`flex-shrink-0 transition-all duration-300 ${
                     isCenter 
-                      ? "w-full sm:w-96 md:w-[420px]" 
-                      : "w-56 sm:w-72 md:w-80 opacity-40 hidden sm:block"
+                      ? "w-[82vw] sm:w-[65vw] md:w-[48vw] lg:w-[40vw] xl:w-[34vw]"
+                      : "w-[70vw] sm:w-[52vw] md:w-[38vw] lg:w-[32vw] xl:w-[28vw] opacity-55"
                   }`}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -105,6 +144,7 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
                   transition={{ duration: 0.3 }}
                   animate={{
                     scale: isCenter ? 1 : 0.85,
+                    y: isCenter ? 0 : 10,
                   }}
                 >
                   <Link to={`/course/${program.slug}`}>
@@ -190,16 +230,14 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
             <>
               <button
                 onClick={() => scroll("left")}
-                disabled={currentIndex === 0}
-                className="absolute -left-4 md:-left-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
               >
                 <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
               </button>
 
               <button
                 onClick={() => scroll("right")}
-                disabled={currentIndex === bestCourses.length - 1}
-                className="absolute -right-4 md:-right-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute -right-2 md:-right-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
               >
                 <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
               </button>
@@ -212,22 +250,7 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
           {bestCourses.map((_, idx) => (
             <button
               key={idx}
-              onClick={() => {
-                setCurrentIndex(idx);
-                if (scrollContainerRef.current) {
-                  const container = scrollContainerRef.current;
-                  const cardWidth = container.offsetWidth < 768 
-                    ? container.offsetWidth * 0.85 
-                    : container.offsetWidth * 0.45;
-                  const gap = 16;
-                  const totalWidth = cardWidth + gap;
-                  
-                  container.scrollTo({
-                    left: idx * totalWidth,
-                    behavior: "smooth",
-                  });
-                }
-              }}
+              onClick={() => scrollToIndex(idx)}
               className={`h-2 rounded-full transition-all ${
                 idx === currentIndex 
                   ? "w-8 bg-primary" 
