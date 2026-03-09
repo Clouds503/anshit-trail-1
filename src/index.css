@@ -81,12 +81,22 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  html, body {
+    height: 100%;
+    width: 100%;
   }
 
   body {
+    margin: 0;
+    padding: 0;
     @apply bg-background text-foreground font-body antialiased;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {

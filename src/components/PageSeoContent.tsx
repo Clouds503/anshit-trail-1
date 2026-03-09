@@ -45,6 +45,8 @@ type PageSeoContentProps = {
   heroTitle?: string;
   excludedHeadings?: string[];
   minUsefulWords?: number;
+  limitToFirstBlocks?: number;
+  skipFirstBlocks?: number;
 };
 
 const PageSeoContent = ({
@@ -53,6 +55,8 @@ const PageSeoContent = ({
   heroTitle,
   excludedHeadings,
   minUsefulWords = 420,
+  limitToFirstBlocks,
+  skipFirstBlocks = 0,
 }: PageSeoContentProps) => {
   const { data } = useQuery({
     queryKey: ["page-seo-content", slug],
@@ -83,11 +87,19 @@ const PageSeoContent = ({
 
   if (!data || data.length === 0) return null;
 
+  let blocksToRender = data;
+  if (skipFirstBlocks > 0) {
+    blocksToRender = data.slice(skipFirstBlocks);
+  }
+  if (limitToFirstBlocks) {
+    blocksToRender = blocksToRender.slice(0, limitToFirstBlocks);
+  }
+
   return (
     <section className={cn("py-14 md:py-16", className)}>
       <div className="container max-w-5xl">
         <div className="space-y-6">
-          {data.map((block, idx) => {
+          {blocksToRender.map((block, idx) => {
             if (block.type === "heading") {
               return (
                 <h2 key={idx} className={cn("font-heading text-foreground leading-tight", textClasses(block.style, "3xl"))}>

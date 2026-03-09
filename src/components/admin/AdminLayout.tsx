@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
 import {
   LayoutDashboard, BookOpen, FileText, MessageSquare, HelpCircle, BarChart3,
-  Image, Settings, Globe, Link2, Phone, Share2, Bot, Search, LogOut, Footprints, Menu, ClipboardList, FileStack, CreditCard, GraduationCap, UserRound, Megaphone, LoaderCircle
+  Image, Settings, Globe, Link2, Phone, Share2, Bot, Search, LogOut, Footprints, Menu, ClipboardList, FileStack, CreditCard, GraduationCap, UserRound, Megaphone, LoaderCircle, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -10,6 +10,7 @@ import { useState } from "react";
 const navItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Programs", url: "/admin/programs", icon: BookOpen },
+  { title: "Best Courses", url: "/admin/best-courses", icon: Star },
   { title: "Pages", url: "/admin/pages", icon: FileStack },
   { title: "Blogs", url: "/admin/blogs", icon: FileText },
   { title: "Blog Editor", url: "/admin/blog-editor", icon: FileText },

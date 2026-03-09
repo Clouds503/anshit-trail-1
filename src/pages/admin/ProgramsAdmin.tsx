@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Sparkles, Upload, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Sparkles, Upload, FileText, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   buildMasterImagePrompt,
@@ -15,6 +15,18 @@ import {
   uploadImageFileToCloudinary,
 } from "@/lib/admin-image";
 import { invokeAdminFunction } from "@/lib/edge-functions";
+
+// Utility function to generate SEO-friendly slug
+const generateSlug = (text: string): string => {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+};
 
 interface Program {
   id: string;
@@ -456,7 +468,31 @@ const ProgramsAdmin = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Slug *</label>
-              <Input value={form.slug || ""} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+              <div className="flex gap-2">
+                <Input 
+                  value={form.slug || ""} 
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })} 
+                  placeholder="e.g. salesforce-admin-course"
+                  className="flex-1"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    const newSlug = generateSlug(form.title);
+                    if (newSlug) {
+                      setForm({ ...form, slug: newSlug });
+                      toast.success("Slug auto-generated");
+                    } else {
+                      toast.error("Enter a title first");
+                    }
+                  }}
+                  size="sm"
+                  title="Auto-generate SEO-friendly slug from title"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Short Description</label>

@@ -23,14 +23,27 @@ const ContactUs = () => {
       <MarqueeBanner items={["Admissions Open 2026", "100% Placement Assistance", "Free Demo Classes"]} />
       <Header />
       <PageHero title="Contact Us" subtitle="Get in touch with our team" imageUrl={heroImage} />
-      <ContactSection showSectionHeading={false} />
+      
       <PageSeoContent
         slug="contact"
-        className="pt-2"
+        className="py-8 md:py-12"
         heroTitle="Contact Us"
+        limitToFirstBlocks={2}
         excludedHeadings={["contact us", "our location & contact"]}
-        minUsefulWords={760}
+        minUsefulWords={0}
       />
+      
+      <ContactSection showSectionHeading={true} />
+      
+      <PageSeoContent
+        slug="contact"
+        className="py-8 md:py-12"
+        heroTitle="Contact Us"
+        skipFirstBlocks={2}
+        excludedHeadings={["contact us", "our location & contact"]}
+        minUsefulWords={0}
+      />
+      
       <Footer />
       <WhatsAppButton />
     </div>

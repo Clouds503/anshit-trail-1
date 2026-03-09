@@ -23,6 +23,7 @@ import AdminGuard from "./components/admin/AdminGuard";
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import ProgramsAdmin from "./pages/admin/ProgramsAdmin";
+import BestCoursesAdmin from "./pages/admin/BestCoursesAdmin";
 import BlogsAdmin from "./pages/admin/BlogsAdmin";
 import TestimonialsAdmin from "./pages/admin/TestimonialsAdmin";
 import FaqsAdmin from "./pages/admin/FaqsAdmin";
@@ -90,6 +91,7 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminPage><Dashboard /></AdminPage>} />
           <Route path="/admin/programs" element={<AdminPage><ProgramsAdmin /></AdminPage>} />
+          <Route path="/admin/best-courses" element={<AdminPage><BestCoursesAdmin /></AdminPage>} />
           <Route path="/admin/pages" element={<AdminPage><PagesAdmin /></AdminPage>} />
           <Route path="/admin/blogs" element={<AdminPage><BlogsAdmin /></AdminPage>} />
           <Route path="/admin/blog-editor" element={<AdminPage><BlogTypographyAdmin /></AdminPage>} />

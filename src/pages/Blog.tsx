@@ -81,16 +81,17 @@ const Blog = () => {
       <MarqueeBanner items={["Admissions Open 2026", "100% Placement Assistance", "Free Demo Classes"]} />
       <Header />
 
+      <PageSeoContent
+        slug="blog"
+        className="py-8 md:py-12"
+        heroTitle="Latest Insights & Resources"
+        limitToFirstBlocks={2}
+        excludedHeadings={["latest insights & resources", "our blog"]}
+        minUsefulWords={0}
+      />
+
       <section className="py-10 md:py-20">
         <div className="container">
-          <motion.div className="text-center mb-8 md:mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">Our Blog</p>
-            <h1 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground">Latest Insights & Resources</h1>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              Stay updated with the latest trends, tips, and career advice in the tech industry.
-            </p>
-          </motion.div>
-
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 max-w-6xl mx-auto">
             {posts.map((post, i) => (
               <motion.article
@@ -123,10 +124,11 @@ const Blog = () => {
 
       <PageSeoContent
         slug="blog"
-        className="pt-0"
+        className="py-8 md:py-12"
         heroTitle="Latest Insights & Resources"
+        skipFirstBlocks={2}
         excludedHeadings={["latest insights & resources", "our blog"]}
-        minUsefulWords={720}
+        minUsefulWords={0}
       />
 
       <PublicLongformContent variant="blog" />
