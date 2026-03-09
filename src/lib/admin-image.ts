@@ -18,6 +18,12 @@ type CloudinaryConfig = {
   uploadPreset: string;
 };
 
+function isNetworkTransportError(message: string): boolean {
+  return /failed to fetch|failed to send a request|network request failed|err_network_changed|err_connection_reset|err_name_not_resolved/i.test(
+    message,
+  );
+}
+
 function parseSettingValue(value: any): string {
   if (typeof value !== "string") return String(value || "");
   try {
@@ -90,8 +96,20 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
     } catch (err: any) {
       lastError = err;
       console.error("generate-image attempt", attempt + 1, "error:", err);
-      // if client-side issue or 4xx, don't retry
       const msg = String(err?.message || err);
+      if (isNetworkTransportError(msg)) {
+        const supabaseHost = (() => {
+          try {
+            return new URL(String(import.meta.env.VITE_SUPABASE_URL || "")).host || "unknown-host";
+          } catch {
+            return "unknown-host";
+          }
+        })();
+        throw new Error(
+          `Cannot reach Supabase endpoint (${supabaseHost}). Check internet, DNS/VPN/firewall, and VITE_SUPABASE_URL.`,
+        );
+      }
+      // if client-side issue or 4xx, don't retry
       if (/4\d{2}|bad request|unauthorized|forbidden|non-2xx/i.test(msg)) break;
       // backoff
       await new Promise((res) => setTimeout(res, 1000 * (attempt + 1)));

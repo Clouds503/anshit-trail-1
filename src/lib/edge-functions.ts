@@ -59,16 +59,22 @@ async function invokeWithPublishableToken<T = any>(functionName: string, options
   }
 
   const endpoint = `${supabaseUrl.replace(/\/+$/, "")}/functions/v1/${functionName}`;
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: publishableKey,
-      Authorization: `Bearer ${publishableKey}`,
-      ...(options?.headers || {}),
-    },
-    body: options?.body === undefined ? "{}" : JSON.stringify(options.body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: publishableKey,
+        Authorization: `Bearer ${publishableKey}`,
+        ...(options?.headers || {}),
+      },
+      body: options?.body === undefined ? "{}" : JSON.stringify(options.body),
+    });
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err || "network error");
+    throw new Error(`Network error calling ${functionName} at ${endpoint}: ${reason}`);
+  }
 
   const raw = await response.text().catch(() => "");
   const parsed = (() => {

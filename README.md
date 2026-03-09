@@ -12,10 +12,10 @@ Production website for Clouds Trail, built with React + Vite + Supabase.
 
 ## Local Development
 
-1. Install dependencies:
+1. Create a local env file from the template:
 
 ```sh
-npm install
+cp .env.example .env
 ```
 
 2. Configure environment variables in `.env`:
@@ -25,7 +25,13 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
-3. Start development server:
+3. Install dependencies:
+
+```sh
+npm install
+```
+
+4. Start development server:
 
 ```sh
 npm run dev
@@ -43,3 +49,8 @@ npm run preview
 - Edge functions are in `supabase/functions/`
 - SQL migrations are in `supabase/migrations/`
 - Project settings are in `supabase/config.toml`
+
+## Repository Policy
+
+- `.env` is local-only and should not be committed.
+- Use npm as the package manager for this repo (`package-lock.json` is the source of truth).

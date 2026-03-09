@@ -168,7 +168,7 @@ async function isUsableImage(url: string): Promise<boolean> {
 }
 
 async function hasReadableText(url: string, groqApiKey: string): Promise<boolean> {
-  if (!groqApiKey) return true;
+  if (!groqApiKey) return false;
 
   const detectWithModel = async (model: string): Promise<boolean> => {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
