@@ -26,15 +26,20 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(0);
 
-  const { data: bestCourses = [] } = useQuery({
+  const { data: bestCourses = [] } = useQuery<BestCourse[]>({
     queryKey: ["best_courses_slider"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("best_courses")
         .select("id, program_id, display_order, program:program_id(id, title, slug, image_url, short_description, duration, level)")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
-      return (data as any) || [];
+
+      if (error) {
+        throw error;
+      }
+
+      return (data ?? []) as BestCourse[];
     },
   });
 
