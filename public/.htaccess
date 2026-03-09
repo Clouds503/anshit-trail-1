@@ -12,7 +12,8 @@ AddDefaultCharset UTF-8
   RewriteCond %{HTTP_HOST} ^www\.cloudstrail\.com$ [NC]
   RewriteRule ^ https://cloudstrail.com%{REQUEST_URI} [R=301,L]
 
-  # /sitemap.xml is served as a static XML file from public/.
+  # Dynamic sitemap endpoint (auto-updates from blogs/programs data)
+  RewriteRule ^sitemap\.xml$ https://oxvjyrwyrfggbaqyhaov.supabase.co/functions/v1/sitemap [R=301,L]
 
   # Force public SPA slugs to index.html even if stale folders/files exist on host
   RewriteRule ^(about|about-us|contact|programs|courses|course|blog|blogs|terms|terms-condition|terms-conditions|terms-and-conditions|terms-of-service|privacy|privacy-policy|refund|refund-policy|enroll)(/.*)?$ index.html [L]
