@@ -365,10 +365,10 @@ const ProgramsAdmin = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-heading font-bold text-foreground">Programs</h1>
-        <div className="flex items-center gap-2">
-          <Button onClick={openAdd}><Plus className="h-4 w-4 mr-2" />Add New</Button>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-heading font-bold text-foreground sm:text-2xl">Programs</h1>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button onClick={openAdd} className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" />Add New</Button>
           <Button
             variant="outline"
             onClick={async () => {
@@ -377,6 +377,7 @@ const ProgramsAdmin = () => {
             }}
             disabled={fixingBroken}
             title="Scan programs and regenerate missing/broken images"
+            className="w-full sm:w-auto"
           >
             {fixingBroken ? `Fixing (${fixedCount}/${totalBroken})` : "Fix Broken Images"}
           </Button>
@@ -388,8 +389,8 @@ const ProgramsAdmin = () => {
       ) : data.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No programs yet.</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <Table>
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <Table className="min-w-[980px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
@@ -407,9 +408,9 @@ const ProgramsAdmin = () => {
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.title}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{item.slug}</TableCell>
-                  <TableCell>{item.level || "—"}</TableCell>
-                  <TableCell>{item.is_trending ? "✓" : "✗"}</TableCell>
-                  <TableCell>{item.is_active ? "✓" : "✗"}</TableCell>
+                  <TableCell>{item.level || "-"}</TableCell>
+                  <TableCell>{item.is_trending ? "Yes" : "No"}</TableCell>
+                  <TableCell>{item.is_active ? "Yes" : "No"}</TableCell>
                   <TableCell>{Array.isArray(item.modules) ? item.modules.length : 0}</TableCell>
                   <TableCell>
                     {item.syllabus_url ? (
@@ -417,7 +418,7 @@ const ProgramsAdmin = () => {
                         PDF
                       </a>
                     ) : (
-                      "—"
+                      "-"
                     )}
                   </TableCell>
                   <TableCell>
@@ -457,7 +458,7 @@ const ProgramsAdmin = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{editItem ? "Edit" : "Add"} Program</DialogTitle>
           </DialogHeader>
@@ -468,7 +469,7 @@ const ProgramsAdmin = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Slug *</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input 
                   value={form.slug || ""} 
                   onChange={(e) => setForm({ ...form, slug: e.target.value })} 
@@ -504,7 +505,7 @@ const ProgramsAdmin = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Image</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="URL or upload" className="flex-1" />
                 <Button type="button" variant="outline" onClick={uploadImageToCloudinary} disabled={uploading} size="sm">
                   <Upload className="h-4 w-4 mr-1" />{uploading ? "..." : "Upload"}
@@ -516,7 +517,7 @@ const ProgramsAdmin = () => {
               </div>
               {form.image_url && <img src={form.image_url} alt="Preview" className="w-full h-32 object-cover rounded mt-2" />}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">Duration</label>
                 <Input value={form.duration || ""} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="e.g. 6 Months" />
@@ -531,7 +532,7 @@ const ProgramsAdmin = () => {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">Price</label>
                 <Input type="number" value={form.price ?? 0} onChange={(e) => setForm({ ...form, price: e.target.value })} />
@@ -551,7 +552,7 @@ const ProgramsAdmin = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1 block">Syllabus PDF</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   value={form.syllabus_url || ""}
                   readOnly
@@ -582,7 +583,7 @@ const ProgramsAdmin = () => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={!!form.is_trending} onCheckedChange={(v) => setForm({ ...form, is_trending: v })} />
                 <label className="text-sm">Trending</label>
@@ -601,10 +602,10 @@ const ProgramsAdmin = () => {
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-md rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>Confirm Delete</DialogTitle></DialogHeader>
           <p className="text-muted-foreground text-sm">Are you sure? This action cannot be undone.</p>
-          <div className="flex gap-2 justify-end mt-4">
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </div>
@@ -613,7 +614,7 @@ const ProgramsAdmin = () => {
 
       {/* Syllabus Text Extraction Dialog */}
       <Dialog open={syllabusDialogOpen} onOpenChange={setSyllabusDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-lg rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>Paste Syllabus Text</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground mb-3">
             Enter the syllabus or curriculum text below. AI will extract structured modules automatically.

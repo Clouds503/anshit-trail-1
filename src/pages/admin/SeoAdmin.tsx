@@ -245,26 +245,26 @@ const SeoAdmin = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-heading font-bold text-foreground">🔍 Master SEO Engine</h1>
-        <Button onClick={openAdd} size="sm"><Plus className="h-4 w-4 mr-1" /> Add Page</Button>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-heading font-bold text-foreground sm:text-2xl">Master SEO Engine</h1>
+        <Button onClick={openAdd} size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Page</Button>
       </div>
 
             {/* Controls */}
-      <div className="bg-card border rounded-lg p-4 mb-6 space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <select value={level} onChange={(e) => setLevel(e.target.value)} className="h-9 px-3 rounded-md border border-input bg-background text-sm">
+      <div className="mb-6 space-y-3 rounded-lg border bg-card p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto">
             <option value="basic">Basic SEO</option>
             <option value="intermediate">Intermediate SEO</option>
             <option value="advanced">Advanced SEO</option>
             <option value="master">Master SEO</option>
           </select>
-          <Input value={singlePage} onChange={(e) => setSinglePage(e.target.value)} placeholder="Page path (leave empty for all)" className="w-48 h-9 text-sm" />
-          <div className="flex items-center gap-2 rounded-md border border-input px-2 h-9 bg-background">
+          <Input value={singlePage} onChange={(e) => setSinglePage(e.target.value)} placeholder="Page path (leave empty for all)" className="h-9 w-full text-sm sm:w-52" />
+          <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-2 sm:w-auto">
             <span className="text-xs text-muted-foreground">Changed Only</span>
             <Switch checked={changedOnly} onCheckedChange={setChangedOnly} />
           </div>
-          <div className="flex items-center gap-2 rounded-md border border-input px-2 h-9 bg-background">
+          <div className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-2 sm:w-auto">
             <span className="text-xs text-muted-foreground">Weak First</span>
             <Switch checked={optimizeWeakFirst} onCheckedChange={setOptimizeWeakFirst} />
           </div>
@@ -272,12 +272,12 @@ const SeoAdmin = () => {
             value={maxIndexingPerRun}
             onChange={(e) => setMaxIndexingPerRun(e.target.value.replace(/[^\d]/g, ""))}
             placeholder="Max Indexing/Run"
-            className="w-36 h-9 text-sm"
+            className="h-9 w-full text-sm sm:w-40"
           />
-          <Button onClick={saveAutomationDefaults} disabled={savingAutomation} variant="outline">
+          <Button onClick={saveAutomationDefaults} disabled={savingAutomation} variant="outline" className="w-full sm:w-auto">
             {savingAutomation ? "Saving..." : "Save Defaults"}
           </Button>
-          <Button onClick={() => autoGenerateSeo()} disabled={generating} className="bg-gradient-to-r from-primary to-purple-600 text-white">
+          <Button onClick={() => autoGenerateSeo()} disabled={generating} className="w-full bg-gradient-to-r from-primary to-purple-600 text-white sm:w-auto">
             <Sparkles className="h-4 w-4 mr-2" />{generating ? "Generating..." : "Auto-Generate SEO"}
           </Button>
         </div>
@@ -289,8 +289,8 @@ const SeoAdmin = () => {
       {loading ? (
         <div className="text-center py-10 text-muted-foreground">Loading...</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <Table>
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <Table className="min-w-[940px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Path</TableHead>
@@ -305,12 +305,12 @@ const SeoAdmin = () => {
               {entries.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="font-mono text-xs">{e.page_path}</TableCell>
-                  <TableCell className="text-sm max-w-[200px] truncate">{e.title || "—"}</TableCell>
-                  <TableCell className="text-xs text-primary">{e.focus_keyword || "—"}</TableCell>
+                  <TableCell className="text-sm max-w-[200px] truncate">{e.title || "-"}</TableCell>
+                  <TableCell className="text-xs text-primary">{e.focus_keyword || "-"}</TableCell>
                   <TableCell>{e.indexing_enabled !== false ? <Globe className="h-4 w-4 text-green-500" /> : <Globe className="h-4 w-4 text-red-400" />}</TableCell>
-                  <TableCell>{e.auto_generated ? "✓" : "—"}</TableCell>
+                  <TableCell>{e.auto_generated ? "Yes" : "-"}</TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex flex-wrap gap-1">
                       <Button variant="ghost" size="icon" onClick={() => { setViewItem(e); setDetailOpen(true); }} title="View details"><Eye className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(e)} title="Edit"><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => autoGenerateSeo(e.page_path)} disabled={generating} title="Regenerate"><Sparkles className="h-4 w-4" /></Button>
@@ -326,7 +326,7 @@ const SeoAdmin = () => {
 
       {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85vh] overflow-y-auto rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>{editItem ? "Edit" : "Add"} SEO Entry</DialogTitle></DialogHeader>
           <div className="space-y-3 mt-2">
             <div><label className="text-xs font-medium text-foreground">Page Path *</label><Input value={form.page_path || ""} onChange={(e) => setForm({ ...form, page_path: e.target.value })} placeholder="e.g. /, /about" /></div>
@@ -349,15 +349,15 @@ const SeoAdmin = () => {
 
       {/* Detail View Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>SEO Details: {viewItem?.page_path}</DialogTitle></DialogHeader>
           {viewItem && (
             <div className="space-y-4 mt-2 text-sm">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Title</label><p className="text-foreground mt-1">{viewItem.title || "—"}</p></div>
-                <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Focus Keyword</label><p className="text-primary mt-1 font-medium">{viewItem.focus_keyword || "—"}</p></div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Title</label><p className="text-foreground mt-1">{viewItem.title || "-"}</p></div>
+                <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Focus Keyword</label><p className="text-primary mt-1 font-medium">{viewItem.focus_keyword || "-"}</p></div>
               </div>
-              <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Description</label><p className="text-foreground mt-1">{viewItem.description || "—"}</p></div>
+              <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Description</label><p className="text-foreground mt-1">{viewItem.description || "-"}</p></div>
               <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Keywords</label><div className="flex flex-wrap gap-1 mt-1">{(viewItem.keywords || []).map((k, i) => <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded">{k}</span>)}</div></div>
               <div className="bg-muted/50 rounded-lg p-3"><label className="text-[10px] font-bold uppercase text-muted-foreground">Robots</label><p className="text-foreground mt-1 font-mono text-xs">{viewItem.robots_directive || "index, follow"}</p></div>
 

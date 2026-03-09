@@ -100,17 +100,17 @@ const ContentSeoAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-4">Content SEO Automation</h1>
+      <h1 className="mb-4 text-xl font-heading font-bold text-foreground sm:text-2xl">Content SEO Automation</h1>
 
-      <div className="bg-card border rounded-lg p-4 mb-6 space-y-3">
+      <div className="mb-6 space-y-3 rounded-lg border bg-card p-4">
         <p className="text-sm text-muted-foreground">
           This panel is for AI enrichment of page headings, subheadings, paragraphs and section images. Use <strong>Pages</strong> for manual editing.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="h-9 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto"
           >
             <option value="basic">Basic</option>
             <option value="intermediate">Intermediate</option>
@@ -121,16 +121,16 @@ const ContentSeoAdmin = () => {
             value={singlePage}
             onChange={(e) => setSinglePage(e.target.value)}
             placeholder="Optional page slug (home, about, programs...)"
-            className="w-72 h-9 text-sm"
+            className="h-9 w-full text-sm sm:w-72"
           />
-          <Button onClick={() => runContentSeo()} disabled={running}>
+          <Button onClick={() => runContentSeo()} disabled={running} className="w-full sm:w-auto">
             <Sparkles className={`h-4 w-4 mr-2 ${running ? "animate-spin" : ""}`} />
             {running ? "Running..." : "Run Content SEO"}
           </Button>
-          <Button onClick={runMetaSeoOnly} disabled={running} variant="outline">
+          <Button onClick={runMetaSeoOnly} disabled={running} variant="outline" className="w-full sm:w-auto">
             SEO Metadata Only
           </Button>
-          <Button onClick={fetchRows} variant="outline" size="icon" title="Refresh">
+          <Button onClick={fetchRows} variant="outline" size="icon" title="Refresh" className="w-full sm:w-9">
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
@@ -141,8 +141,8 @@ const ContentSeoAdmin = () => {
       ) : rows.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No page content found.</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <Table>
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <Table className="min-w-[860px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Slug</TableHead>
@@ -162,7 +162,7 @@ const ContentSeoAdmin = () => {
                   <TableCell className="text-sm">{row.hero_image_url ? "Yes" : "No"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{row.updated_at ? new Date(row.updated_at).toLocaleString() : "-"}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button size="sm" variant="outline" onClick={() => runContentSeo(row.page_slug)} disabled={running}>
                         <Sparkles className="h-3.5 w-3.5 mr-1" />
                         Enrich

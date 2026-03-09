@@ -58,9 +58,9 @@ const SettingsAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Site Settings</h1>
-      <div className="space-y-6 max-w-lg">
-        <div className="bg-card border rounded-lg p-5">
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Site Settings</h1>
+      <div className="max-w-3xl space-y-6">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Branding</h2>
           <div className="space-y-3">
             <div>
@@ -91,7 +91,7 @@ const SettingsAdmin = () => {
                 maxLength={260}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="text-xs text-muted-foreground">Header Logo Height (px)</label>
                 <Input
@@ -128,7 +128,7 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <div className="space-y-4">
             <div>
               <h2 className="font-heading font-bold text-sm text-foreground mb-3">Hero Section Mode</h2>
@@ -160,7 +160,7 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">WhatsApp Widget</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -187,19 +187,19 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Custom Snippets</h2>
           <Textarea value={snippets} onChange={(e) => setSnippets(e.target.value)} rows={6} placeholder="Paste custom HTML/script snippets..." />
           <Button className="mt-2" onClick={() => saveSetting("custom_snippets", snippets.split("\n\n").filter(Boolean))} disabled={saving}>Save Snippets</Button>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Admin Email</h2>
           <Input value={s("admin_email")} onChange={(e) => setSettings({ ...settings, admin_email: e.target.value })} placeholder="admin@example.com" />
           <Button className="mt-2" onClick={() => saveSetting("admin_email", settings.admin_email)} disabled={saving}>Save</Button>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Cloudinary</h2>
           <div className="space-y-3">
             <div><label className="text-xs text-muted-foreground">Cloud Name</label><Input value={s("cloudinary_cloud_name")} onChange={(e) => setSettings({ ...settings, cloudinary_cloud_name: e.target.value })} /></div>
@@ -208,7 +208,7 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Search Indexing</h2>
           <div className="space-y-3">
             <div>
@@ -265,7 +265,7 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Analytics Service Account</h2>
           <div className="space-y-3">
             <label className="text-xs text-muted-foreground">JSON / Endpoint</label>
@@ -275,7 +275,7 @@ const SettingsAdmin = () => {
               rows={6}
               placeholder="Paste service account JSON or upload file"
             />
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button onClick={() => saveSetting("analytics_service_account", settings.analytics_service_account)} disabled={saving}>Save</Button>
               <Button
                 variant="outline"
@@ -310,7 +310,7 @@ const SettingsAdmin = () => {
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h2 className="font-heading font-bold text-sm text-foreground mb-3">Razorpay</h2>
           <div className="space-y-3">
             <div><label className="text-xs text-muted-foreground">Key ID (publishable)</label><Input value={s("razorpay_key_id")} onChange={(e) => setSettings({ ...settings, razorpay_key_id: e.target.value })} placeholder="rzp_test_..." /></div>

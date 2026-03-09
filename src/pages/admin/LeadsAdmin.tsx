@@ -77,37 +77,37 @@ const LeadsAdmin = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">Leads / Enquiries</h1>
+          <h1 className="text-xl font-heading font-bold text-foreground sm:text-2xl">Leads / Enquiries</h1>
           <p className="text-sm text-muted-foreground">{filtered.length} of {leads.length} leads</p>
         </div>
-        <Button onClick={exportCSV} variant="outline" disabled={filtered.length === 0}>
+        <Button onClick={exportCSV} variant="outline" disabled={filtered.length === 0} className="w-full sm:w-auto">
           <Download className="h-4 w-4 mr-2" /> Export CSV
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="bg-card border rounded-lg p-4 mb-4 space-y-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+      <div className="mb-4 space-y-3 rounded-lg border bg-card p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="relative w-full sm:min-w-[220px] sm:flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search name, email, phone..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[140px]">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:min-w-[150px]">
             <option value="">All Types</option>
             {uniqueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[140px]">
+          <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:min-w-[150px]">
             <option value="">All Sources</option>
             {uniqueSources.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          <select value={filterProgram} onChange={(e) => setFilterProgram(e.target.value)} className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[160px]">
+          <select value={filterProgram} onChange={(e) => setFilterProgram(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:min-w-[170px]">
             <option value="">All Programs</option>
             {uniquePrograms.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
           {hasFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="w-full text-muted-foreground sm:w-auto">
               <X className="h-4 w-4 mr-1" /> Clear
             </Button>
           )}
@@ -119,8 +119,8 @@ const LeadsAdmin = () => {
       ) : filtered.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No leads found.</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-auto">
-          <Table>
+        <div className="overflow-auto rounded-lg border bg-card">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -148,7 +148,7 @@ const LeadsAdmin = () => {
                       "bg-muted text-muted-foreground"
                     }`}>{l.lead_type}</span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{l.source_page || "—"}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{l.source_page || "-"}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{new Date(l.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}

@@ -88,10 +88,10 @@ const Footer = () => {
   const footerLogoHeight = footerBranding?.footerLogoHeight || 40;
 
   return (
-    <footer className="bg-secondary text-secondary-foreground">
-      <div className="container py-10 md:py-14">
+    <footer className="overflow-x-clip bg-secondary text-secondary-foreground">
+      <div className="container py-9 md:py-14">
         <div
-          className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10 md:[grid-template-columns:repeat(var(--footer-cols),minmax(0,1fr))]"
+          className="grid grid-cols-1 gap-7 sm:grid-cols-2 md:gap-10 md:[grid-template-columns:repeat(var(--footer-cols),minmax(0,1fr))]"
           style={{ "--footer-cols": String(footerCols) } as CSSProperties}
         >
           <div className="sm:col-span-2 md:col-span-1 text-center sm:text-left">
@@ -103,10 +103,10 @@ const Footer = () => {
                 style={{ height: `${footerLogoHeight}px` }}
               />
             </Link>
-            <p className="text-secondary-foreground/50 text-[10px] md:text-xs uppercase tracking-wide mb-1.5">
+            <p className="mb-1.5 text-[11px] uppercase tracking-wide text-secondary-foreground/50 sm:text-xs">
               {brandSubtitle}
             </p>
-            <p className="text-secondary-foreground/60 text-xs md:text-sm leading-relaxed max-w-sm mx-auto sm:mx-0">
+            <p className="mx-auto max-w-sm text-sm leading-relaxed text-secondary-foreground/70 sm:mx-0">
               {footerBio || brandDescription}
             </p>
           </div>
@@ -114,13 +114,13 @@ const Footer = () => {
           {footerSections ? (
             footerSections.map((section) => (
               <div key={section.id} className="text-center sm:text-left">
-                <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">{section.title}</h4>
-                <ul className="space-y-1.5 md:space-y-2.5">
+                <h4 className="mb-2.5 text-[11px] font-heading font-bold uppercase tracking-wider text-secondary-foreground/45 sm:mb-3 sm:text-xs">{section.title}</h4>
+                <ul className="space-y-2">
                   {section.links.map((link: any) => (
                     <li key={link.id}>
                       <Link
                         to={String(link.label || "").trim().toLowerCase() === "all courses" ? "/programs" : link.url}
-                        className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors"
+                        className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary"
                       >
                         {String(link.label || "").trim().toLowerCase() === "all courses" ? "Programs" : link.label}
                       </Link>
@@ -132,30 +132,30 @@ const Footer = () => {
           ) : (
             <>
               <div className="text-center sm:text-left">
-                <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Quick Links</h4>
-                <ul className="space-y-1.5 md:space-y-2.5">
-                  <li><Link to="/about" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">About Us</Link></li>
-                  <li><Link to="/programs" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Programs</Link></li>
-                  <li><Link to="/contact" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Contact</Link></li>
+                <h4 className="mb-2.5 text-[11px] font-heading font-bold uppercase tracking-wider text-secondary-foreground/45 sm:mb-3 sm:text-xs">Quick Links</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/about" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">About Us</Link></li>
+                  <li><Link to="/programs" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">Programs</Link></li>
+                  <li><Link to="/contact" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">Contact</Link></li>
                 </ul>
               </div>
               <div className="text-center sm:text-left">
-                <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Legal</h4>
-                <ul className="space-y-1.5 md:space-y-2.5">
-                  <li><Link to="/terms" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Terms & Conditions</Link></li>
-                  <li><Link to="/privacy" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Privacy Policy</Link></li>
-                  <li><Link to="/refund" className="text-xs md:text-sm text-secondary-foreground/60 hover:text-primary transition-colors">Refund Policy</Link></li>
+                <h4 className="mb-2.5 text-[11px] font-heading font-bold uppercase tracking-wider text-secondary-foreground/45 sm:mb-3 sm:text-xs">Legal</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/terms" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">Terms & Conditions</Link></li>
+                  <li><Link to="/privacy" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">Privacy Policy</Link></li>
+                  <li><Link to="/refund" className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary">Refund Policy</Link></li>
                 </ul>
               </div>
             </>
           )}
 
           <div className="sm:col-span-2 md:col-span-1 text-center sm:text-left">
-            <h4 className="font-heading font-bold text-[10px] md:text-xs uppercase tracking-wider mb-2 md:mb-4 text-secondary-foreground/40">Contact</h4>
+            <h4 className="mb-2.5 text-[11px] font-heading font-bold uppercase tracking-wider text-secondary-foreground/45 sm:mb-3 sm:text-xs">Contact</h4>
             <ul className="space-y-2 md:space-y-3">
-              <li className="flex items-start sm:items-start justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 mt-0.5 text-primary shrink-0" />{address}</li>
-              <li className="flex items-center justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><Phone className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{phone}</li>
-              <li className="flex items-center justify-center sm:justify-start gap-2 text-xs md:text-sm text-secondary-foreground/60"><Mail className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" />{email}</li>
+              <li className="flex items-start justify-center gap-2 text-sm text-secondary-foreground/75 sm:items-start sm:justify-start"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{address}</li>
+              <li className="flex items-center justify-center gap-2 text-sm text-secondary-foreground/75 sm:justify-start"><Phone className="h-4 w-4 shrink-0 text-primary" />{phone}</li>
+              <li className="flex items-center justify-center gap-2 text-sm text-secondary-foreground/75 sm:justify-start"><Mail className="h-4 w-4 shrink-0 text-primary" />{email}</li>
             </ul>
             <SocialLinks placement="footer" variant="footer" className="mt-3 md:mt-5 justify-center sm:justify-start" />
           </div>
@@ -163,12 +163,12 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-secondary-foreground/10">
-        <div className="container py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
-          <p className="text-[10px] md:text-xs text-secondary-foreground/30 text-center">(c) 2026 {brandTitle}. All rights reserved.</p>
+        <div className="container flex flex-col items-center justify-between gap-2 py-3 pb-16 md:flex-row md:gap-3 md:py-4 md:pb-4">
+          <p className="text-center text-[11px] text-secondary-foreground/35 sm:text-xs">(c) 2026 {brandTitle}. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
-            <Link to="/privacy" className="text-[10px] md:text-xs text-secondary-foreground/30 hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="text-[10px] md:text-xs text-secondary-foreground/30 hover:text-primary transition-colors">Terms of Service</Link>
-            <Link to="/refund" className="text-[10px] md:text-xs text-secondary-foreground/30 hover:text-primary transition-colors">Refund Policy</Link>
+            <Link to="/privacy" className="text-[11px] text-secondary-foreground/40 transition-colors hover:text-primary sm:text-xs">Privacy Policy</Link>
+            <Link to="/terms" className="text-[11px] text-secondary-foreground/40 transition-colors hover:text-primary sm:text-xs">Terms of Service</Link>
+            <Link to="/refund" className="text-[11px] text-secondary-foreground/40 transition-colors hover:text-primary sm:text-xs">Refund Policy</Link>
           </div>
         </div>
       </div>

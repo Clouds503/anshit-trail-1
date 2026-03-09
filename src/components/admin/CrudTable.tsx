@@ -240,9 +240,9 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-heading font-bold text-foreground">{title}</h1>
-        <Button onClick={openAdd}><Plus className="h-4 w-4 mr-2" />Add New</Button>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-heading font-bold text-foreground sm:text-2xl">{title}</h1>
+        <Button onClick={openAdd} className="w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" />Add New</Button>
       </div>
 
       {loading ? (
@@ -250,12 +250,12 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
       ) : data.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No items yet. Click "Add New" to create one.</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <Table>
+        <div className="overflow-hidden rounded-lg border bg-card">
+          <Table className="min-w-[640px]">
             <TableHeader>
               <TableRow>
                 {tableFields.map((f) => <TableHead key={f.key}>{f.label}</TableHead>)}
-                <TableHead className="w-24">Actions</TableHead>
+                <TableHead className="w-28">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -279,7 +279,7 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-lg max-h-[85vh] overflow-y-auto rounded-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{editItem ? "Edit" : "Add"} {title}</DialogTitle>
           </DialogHeader>
@@ -321,13 +321,13 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
                   </div>
                 ) : f.type === "url" && isImageField(f) ? (
                   <div className="space-y-2">
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
                         type="text"
                         value={form[f.key] ?? ""}
                         onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                         placeholder={f.placeholder || f.label}
-                        className="flex-1"
+                        className="flex-1 min-w-0"
                       />
                       <Button
                         type="button"
@@ -335,6 +335,7 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
                         size="sm"
                         onClick={() => handleImageUpload(f.key)}
                         disabled={uploadingField === f.key}
+                        className="sm:w-auto"
                       >
                         <Upload className="h-4 w-4 mr-1" />
                         {uploadingField === f.key ? "Uploading..." : "Upload"}
@@ -345,6 +346,7 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
                         size="sm"
                         onClick={() => handleImageGenerate(f)}
                         disabled={generatingField === f.key}
+                        className="sm:w-auto"
                       >
                         <Sparkles className={`h-4 w-4 mr-1 ${generatingField === f.key ? "animate-spin" : ""}`} />
                         {generatingField === f.key ? "Generating..." : "Generate"}
@@ -368,10 +370,10 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-md rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>Confirm Delete</DialogTitle></DialogHeader>
           <p className="text-muted-foreground text-sm">Are you sure? This action cannot be undone.</p>
-          <div className="flex gap-2 justify-end mt-4">
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </div>

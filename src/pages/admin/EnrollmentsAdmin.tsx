@@ -17,14 +17,14 @@ const EnrollmentsAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">💳 Enrollments & Payments</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Enrollments & Payments</h1>
       {loading ? (
         <div className="text-center py-10 text-muted-foreground">Loading...</div>
       ) : data.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No enrollments yet.</div>
       ) : (
-        <div className="bg-card border rounded-lg overflow-auto">
-          <Table>
+        <div className="overflow-auto rounded-lg border bg-card">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Bill #</TableHead>
@@ -39,13 +39,13 @@ const EnrollmentsAdmin = () => {
             <TableBody>
               {data.map((e: any) => (
                 <TableRow key={e.id}>
-                  <TableCell className="font-mono text-xs">{e.bill_number || "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">{e.bill_number || "-"}</TableCell>
                   <TableCell>
                     <div><span className="font-medium text-sm">{e.name}</span></div>
-                    <div className="text-xs text-muted-foreground">{e.email} · {e.phone}</div>
+                    <div className="text-xs text-muted-foreground">{e.email} | {e.phone}</div>
                   </TableCell>
                   <TableCell className="text-sm">{e.program}</TableCell>
-                  <TableCell className="font-semibold">₹{Number(e.amount || 0).toLocaleString()}</TableCell>
+                  <TableCell className="font-semibold">Rs {Number(e.amount || 0).toLocaleString()}</TableCell>
                   <TableCell className="text-xs">{e.preferred_batch_time}{e.next_batch_date ? <><br /><span className="text-muted-foreground">{new Date(e.next_batch_date).toLocaleDateString('en-IN')}</span></> : null}</TableCell>
                   <TableCell>
                     <Badge variant={e.payment_status === "paid" ? "default" : "secondary"} className={e.payment_status === "paid" ? "bg-green-500" : ""}>

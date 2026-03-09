@@ -40,13 +40,13 @@ const HeroAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Hero Section</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Hero Section</h1>
 
-      <div className="bg-card border rounded-lg p-5 mb-8">
+      <div className="mb-8 rounded-lg border bg-card p-4 sm:p-5">
         <h2 className="font-heading font-bold text-sm text-foreground mb-3">Display Mode</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           {modes.map((m) => (
-            <Button key={m.key} variant={heroMode === m.key ? "default" : "outline"} onClick={() => saveMode(m.key)} disabled={saving}>
+            <Button key={m.key} variant={heroMode === m.key ? "default" : "outline"} onClick={() => saveMode(m.key)} disabled={saving} className="justify-start sm:justify-center">
               <m.icon className="h-4 w-4 mr-2" />{m.label}
             </Button>
           ))}

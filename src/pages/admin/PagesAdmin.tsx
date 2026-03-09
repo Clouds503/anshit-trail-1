@@ -250,10 +250,10 @@ const PagesAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Page Content Manager</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Page Content Manager</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Page list */}
-        <div className="space-y-2">
+        <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-2 sm:space-y-0 md:block md:space-y-2">
           {pages.map((p) => (
             <button key={p.id} onClick={() => setSelected({ ...p })} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selected?.id === p.id ? "bg-primary text-primary-foreground" : "bg-card border hover:bg-muted"}`}>
               {p.page_title}
@@ -265,9 +265,9 @@ const PagesAdmin = () => {
         {/* Editor */}
         {selected ? (
           <div className="md:col-span-3 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-heading font-bold text-foreground">{selected.page_title}</h2>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                 <Button variant="outline" size="sm" onClick={repairBrokenImages} disabled={fixingBroken}>
                   {fixingBroken ? `Fixing (${fixedCount}/${totalBroken})` : "Fix Broken Images"}
                 </Button>
@@ -280,7 +280,7 @@ const PagesAdmin = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="text-xs text-muted-foreground">Page Title</label>
                 <Input value={selected.page_title} onChange={(e) => setSelected({ ...selected, page_title: e.target.value })} />
@@ -293,7 +293,7 @@ const PagesAdmin = () => {
 
             <div>
               <label className="text-xs text-muted-foreground">Hero Image</label>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Input value={selected.hero_image_url || ""} onChange={(e) => setSelected({ ...selected, hero_image_url: e.target.value })} placeholder="Image URL" className="flex-1" />
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -328,9 +328,9 @@ const PagesAdmin = () => {
             </div>
 
             <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="font-heading font-bold text-sm text-foreground">Content Blocks</h3>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1">
                   <Button variant="outline" size="sm" onClick={() => addBlock("heading")}>+ Heading</Button>
                   <Button variant="outline" size="sm" onClick={() => addBlock("subheading")}>+ Subheading</Button>
                   <Button variant="outline" size="sm" onClick={() => addBlock("paragraph")}>+ Paragraph</Button>
@@ -356,7 +356,7 @@ const PagesAdmin = () => {
                         <Input value={block.text || ""} onChange={(e) => updateBlock(idx, { text: e.target.value })} />
                     )}
                     {(block.type === "heading" || block.type === "subheading" || block.type === "paragraph") && (
-                      <div className="grid grid-cols-4 gap-2 mt-2">
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                         <select
                           value={block.style?.size || (block.type === "heading" ? "3xl" : block.type === "subheading" ? "xl" : "base")}
                           onChange={(e) => updateBlock(idx, { style: { ...(block.style || {}), size: e.target.value as any } })}
@@ -391,7 +391,7 @@ const PagesAdmin = () => {
                     {block.type === "list" && (
                       <div className="space-y-1">
                         {(block.items || []).map((item, j) => (
-                          <div key={j} className="flex gap-1">
+                          <div key={j} className="flex flex-col gap-1 sm:flex-row">
                             <Input value={item} onChange={(e) => {
                               const items = [...(block.items || [])];
                               items[j] = e.target.value;
@@ -408,7 +408,7 @@ const PagesAdmin = () => {
                     )}
                     {block.type === "image" && (
                       <div className="space-y-2">
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                           <Input value={block.url || ""} onChange={(e) => updateBlock(idx, { url: e.target.value })} placeholder="Image URL" className="flex-1" />
                           <label className="cursor-pointer">
                             <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -437,7 +437,7 @@ const PagesAdmin = () => {
                           </Button>
                         </div>
                         <Input value={block.alt || ""} onChange={(e) => updateBlock(idx, { alt: e.target.value })} placeholder="Alt text for SEO" />
-                        {block.url && <img src={block.url} alt={block.alt || ""} className="h-20 rounded object-cover" />}
+                        {block.url && <img src={block.url} alt={block.alt || ""} className="h-20 w-full rounded object-cover sm:w-auto" />}
                       </div>
                     )}
                   </div>

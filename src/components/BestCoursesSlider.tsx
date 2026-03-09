@@ -100,7 +100,7 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
   if (bestCourses.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-16 lg:py-24 bg-gradient-to-b from-accent/30 to-background">
+    <section className="overflow-x-clip py-8 md:py-16 lg:py-24 bg-gradient-to-b from-accent/30 to-background">
       <div className="container px-4 sm:px-6">
         <motion.div
           className="text-center mb-4 md:mb-8"
@@ -230,14 +230,14 @@ const BestCoursesSlider = ({ showViewAllButton = true }: { showViewAllButton?: b
             <>
               <button
                 onClick={() => scroll("left")}
-                className="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
+                className="absolute left-1 md:left-3 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
               >
                 <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
               </button>
 
               <button
                 onClick={() => scroll("right")}
-                className="absolute -right-2 md:-right-6 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
+                className="absolute right-1 md:right-3 top-1/2 -translate-y-1/2 z-10 p-2 md:p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
               >
                 <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
               </button>

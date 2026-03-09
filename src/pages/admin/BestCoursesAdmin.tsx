@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Plus, Trash2, GripVertical, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -103,20 +102,6 @@ const BestCoursesAdmin = () => {
     fetchData();
   };
 
-  const handleToggleActive = async (id: string, isActive: boolean) => {
-    const { error } = await supabase
-      .from("best_courses")
-      .update({ is_active: !isActive })
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Failed to update");
-      return;
-    }
-
-    fetchData();
-  };
-
   const handleReorder = async () => {
     setSaving(true);
     const updates = data.map((item, idx) => ({
@@ -156,19 +141,19 @@ const BestCoursesAdmin = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-muted-foreground">Loading...</div>;
+    return <div className="py-10 text-center text-muted-foreground">Loading...</div>;
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-heading font-bold text-foreground">Best Courses</h2>
+          <h2 className="text-xl font-heading font-bold text-foreground sm:text-2xl">Best Courses</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Manage programs featured in the 3D slider on the home page
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
+        <Button onClick={() => setDialogOpen(true)} className="w-full gap-2 sm:w-auto">
           <Plus className="h-4 w-4" /> Add Course
         </Button>
       </div>
@@ -187,23 +172,25 @@ const BestCoursesAdmin = () => {
               onDragStart={() => handleDragStart(item.id)}
               onDragOver={handleDragOver}
               onDrop={() => handleDrop(item.id)}
-              className={`bg-card border rounded-lg p-4 flex items-center gap-4 cursor-move hover:border-primary/30 transition-all ${
+              className={`cursor-move rounded-lg border bg-card p-4 transition-all hover:border-primary/30 ${
                 draggedId === item.id ? "opacity-50" : ""
               }`}
             >
-              <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{item.program.title}</p>
-                <p className="text-xs text-muted-foreground">Order: {item.display_order}</p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{item.program.title}</p>
+                  <p className="text-xs text-muted-foreground">Order: {item.display_order}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRemove(item.id)}
+                  className="w-full text-destructive hover:bg-destructive/10 sm:w-auto"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleRemove(item.id)}
-                className="text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           ))}
 
@@ -221,7 +208,7 @@ const BestCoursesAdmin = () => {
 
       {/* Add Course Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-lg rounded-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Add Course to Best Courses</DialogTitle>
           </DialogHeader>
@@ -243,7 +230,7 @@ const BestCoursesAdmin = () => {
               </select>
             </div>
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="outline"
                 onClick={() => {

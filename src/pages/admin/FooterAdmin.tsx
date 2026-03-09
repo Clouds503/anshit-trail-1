@@ -44,12 +44,12 @@ const FooterAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Footer Management</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Footer Management</h1>
 
-      <div className="bg-card border rounded-lg p-5 mb-8">
+      <div className="mb-8 rounded-lg border bg-card p-4 sm:p-5">
         <h2 className="font-heading font-bold text-sm text-foreground mb-3">Footer Bio</h2>
         <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="mb-3" />
-        <Button onClick={saveBio} disabled={saving}>{saving ? "Saving..." : "Save Bio"}</Button>
+        <Button onClick={saveBio} disabled={saving} className="w-full sm:w-auto">{saving ? "Saving..." : "Save Bio"}</Button>
       </div>
 
       <div className="mb-8">

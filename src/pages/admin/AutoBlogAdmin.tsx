@@ -181,10 +181,10 @@ const AutoBlogAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Auto Blog Generator</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Auto Blog Generator</h1>
       
       {/* Instant Generate */}
-      <div className="bg-card border rounded-lg p-6 max-w-2xl mb-8">
+      <div className="mb-8 max-w-3xl rounded-lg border bg-card p-4 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Bot className="h-5 w-5 text-primary" />
           <p className="text-sm text-muted-foreground">Powered by Groq AI + Pollinations + Cloudinary for images</p>
@@ -215,13 +215,13 @@ const AutoBlogAdmin = () => {
       </div>
 
       {/* SEO Topic Research */}
-      <div className="bg-card border rounded-lg p-6 max-w-2xl mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-8 max-w-3xl rounded-lg border bg-card p-4 sm:p-6">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
             <h2 className="font-heading font-bold text-foreground">SEO Topic Research</h2>
           </div>
-          <Button onClick={researchBlogTopics} disabled={researching} variant="outline" size="sm">
+          <Button onClick={researchBlogTopics} disabled={researching} variant="outline" size="sm" className="w-full sm:w-auto">
             <Search className={`h-4 w-4 mr-2 ${researching ? "animate-spin" : ""}`} />
             {researching ? "Researching..." : "Find Trending Topics"}
           </Button>
@@ -229,12 +229,12 @@ const AutoBlogAdmin = () => {
         {researchTopics.length > 0 && (
           <div className="space-y-2">
             {researchTopics.map((t, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border">
+              <div key={i} className="flex flex-col gap-2 rounded-lg border bg-accent/50 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{t.topic}</p>
                   <p className="text-xs text-muted-foreground">{t.keywords?.join(", ")}</p>
                 </div>
-                <div className="flex items-center gap-2 ml-3 shrink-0">
+                <div className="ml-0 flex items-center gap-2 shrink-0 sm:ml-3">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${t.priority === "high" ? "bg-primary/10 text-primary" : t.priority === "medium" ? "bg-yellow-100 text-yellow-800" : "bg-muted text-muted-foreground"}`}>
                     {t.priority}
                   </span>
@@ -252,36 +252,36 @@ const AutoBlogAdmin = () => {
       </div>
 
 
-      <div className="bg-card border rounded-lg p-6 max-w-2xl mb-8">
+      <div className="mb-8 max-w-3xl rounded-lg border bg-card p-4 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Clock className="h-5 w-5 text-primary" />
           <h2 className="font-heading font-bold text-foreground">Auto-Post Schedule</h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <label className="text-sm text-muted-foreground">Daily post time (IST):</label>
-          <Input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-36" />
-          <Button onClick={saveScheduleTime} disabled={savingTime} size="sm" variant="outline">Save</Button>
+          <Input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-full sm:w-36" />
+          <Button onClick={saveScheduleTime} disabled={savingTime} size="sm" variant="outline" className="w-full sm:w-auto">Save</Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">Queued topics scheduled for today or earlier are generated and published automatically at this time (IST).</p>
       </div>
 
       {/* Blog Queue */}
-      <div className="bg-card border rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-lg border bg-card p-4 sm:p-6">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h2 className="font-heading font-bold text-foreground">Blog Queue</h2>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={queueWeakBlogsForRefresh} disabled={queueingRefresh} variant="outline" size="sm">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={queueWeakBlogsForRefresh} disabled={queueingRefresh} variant="outline" size="sm" className="w-full sm:w-auto">
               <RefreshCw className={`h-4 w-4 mr-2 ${queueingRefresh ? "animate-spin" : ""}`} />
               {queueingRefresh ? "Queueing..." : "Queue Weak Blogs"}
             </Button>
-            <Button onClick={processQueue} disabled={processing} variant="outline" size="sm">
+            <Button onClick={processQueue} disabled={processing} variant="outline" size="sm" className="w-full sm:w-auto">
               <RefreshCw className={`h-4 w-4 mr-2 ${processing ? "animate-spin" : ""}`} />
               {processing ? "Processing..." : "Process Now"}
             </Button>
-            <Button onClick={() => setAddQueueOpen(true)} size="sm">
+            <Button onClick={() => setAddQueueOpen(true)} size="sm" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />Add Topic
             </Button>
           </div>
@@ -292,7 +292,7 @@ const AutoBlogAdmin = () => {
         ) : queue.length === 0 ? (
           <p className="text-muted-foreground text-sm py-4 text-center">No items in queue. Add topics for daily auto-posting.</p>
         ) : (
-          <Table>
+          <Table className="min-w-[820px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Topic</TableHead>
@@ -306,7 +306,7 @@ const AutoBlogAdmin = () => {
               {queue.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.topic}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{item.keywords?.join(", ") || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{item.keywords?.join(", ") || "-"}</TableCell>
                   <TableCell className="text-sm">{item.scheduled_date || "ASAP"}</TableCell>
                   <TableCell>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[item.status] || ""}`}>
@@ -340,7 +340,7 @@ const AutoBlogAdmin = () => {
 
       {/* Add to Queue Dialog */}
       <Dialog open={addQueueOpen} onOpenChange={setAddQueueOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-md rounded-xl p-4 sm:p-6">
           <DialogHeader><DialogTitle>Add to Blog Queue</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
             <div>

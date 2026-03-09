@@ -226,9 +226,9 @@ const BlogTypographyAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Blog Typography Editor</h1>
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Blog Typography Editor</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="space-y-2">
+        <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-2 sm:space-y-0 md:block md:space-y-2">
           {blogs.map((b) => (
             <button
               key={b.id}
@@ -248,7 +248,7 @@ const BlogTypographyAdmin = () => {
             <div className="text-muted-foreground py-10 text-center">Select a blog to edit typography/content</div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted-foreground">Title</label>
                   <Input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -262,10 +262,10 @@ const BlogTypographyAdmin = () => {
                 <label className="text-xs text-muted-foreground">Excerpt</label>
                 <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={2} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="text-xs text-muted-foreground">Thumbnail URL</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
                     <Button type="button" variant="outline" size="sm" onClick={generateThumbnail} disabled={generatingThumb}>
                       <Sparkles className={`h-4 w-4 mr-1 ${generatingThumb ? "animate-spin" : ""}`} />
@@ -280,9 +280,9 @@ const BlogTypographyAdmin = () => {
               </div>
 
               <div className="border-t pt-4">
-                <div className="flex items-center justify-between mb-3">
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <h3 className="font-heading font-bold text-sm text-foreground">Blocks</h3>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     <Button variant="outline" size="sm" onClick={() => addBlock("heading")}>+ Heading</Button>
                     <Button variant="outline" size="sm" onClick={() => addBlock("subheading")}>+ Subheading</Button>
                     <Button variant="outline" size="sm" onClick={() => addBlock("paragraph")}>+ Paragraph</Button>
@@ -314,7 +314,7 @@ const BlogTypographyAdmin = () => {
                       {block.type === "points" && (
                         <div className="space-y-1">
                           {(block.items || []).map((item, itemIdx) => (
-                            <div className="flex gap-1" key={itemIdx}>
+                            <div className="flex flex-col gap-1 sm:flex-row" key={itemIdx}>
                               <Input
                                 value={item}
                                 onChange={(e) => {
@@ -339,7 +339,7 @@ const BlogTypographyAdmin = () => {
 
                       {block.type === "image" && (
                         <div className="space-y-2">
-                          <div className="flex gap-2">
+                          <div className="flex flex-col gap-2 sm:flex-row">
                             <Input value={block.url || ""} onChange={(e) => updateBlock(idx, { url: e.target.value })} placeholder="Image URL" />
                             <Button type="button" variant="outline" size="sm" onClick={() => generateBlockImage(idx)} disabled={generatingBlockIdx === idx}>
                               <Sparkles className={`h-4 w-4 mr-1 ${generatingBlockIdx === idx ? "animate-spin" : ""}`} />
@@ -352,7 +352,7 @@ const BlogTypographyAdmin = () => {
                       )}
 
                       {(block.type === "heading" || block.type === "subheading" || block.type === "paragraph") && (
-                        <div className="grid grid-cols-4 gap-2 mt-2">
+                        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
                           <select
                             value={block.style?.size || defaultStyle(block.type).size}
                             onChange={(e) => updateBlock(idx, { style: { ...(block.style || {}), size: e.target.value as any } })}
@@ -389,7 +389,7 @@ const BlogTypographyAdmin = () => {
                 </div>
               </div>
 
-              <Button onClick={save} disabled={saving}>
+              <Button onClick={save} disabled={saving} className="w-full sm:w-auto">
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? "Saving..." : "Save Blog Content"}
               </Button>

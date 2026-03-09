@@ -37,15 +37,15 @@ const ContactAdmin = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Contact Information</h1>
-      <div className="bg-card border rounded-lg p-5 max-w-lg space-y-4">
+      <h1 className="mb-6 text-xl font-heading font-bold text-foreground sm:text-2xl">Contact Information</h1>
+      <div className="max-w-xl space-y-4 rounded-lg border bg-card p-4 sm:p-5">
         {contactKeys.map((ck) => (
           <div key={ck.key}>
             <label className="text-sm font-medium text-foreground mb-1 block">{ck.label}</label>
             <Input value={values[ck.key] || ""} onChange={(e) => setValues({ ...values, [ck.key]: e.target.value })} />
           </div>
         ))}
-        <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+        <Button onClick={save} disabled={saving} className="w-full sm:w-auto">{saving ? "Saving..." : "Save"}</Button>
       </div>
     </div>
   );

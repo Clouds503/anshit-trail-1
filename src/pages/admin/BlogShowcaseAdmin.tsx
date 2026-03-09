@@ -88,7 +88,7 @@ const BlogShowcaseAdmin = () => {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-heading font-bold text-foreground">Blog Showcase</h1>
+      <h1 className="mb-2 text-xl font-heading font-bold text-foreground sm:text-2xl">Blog Showcase</h1>
       <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
         Control how many latest blogs are auto-assigned to the public page&apos;s
         {" "}
@@ -101,7 +101,7 @@ const BlogShowcaseAdmin = () => {
         once the limit is reached.
       </p>
 
-      <div className="mb-6 rounded-lg border bg-card p-5">
+      <div className="mb-6 rounded-lg border bg-card p-4 sm:p-5">
         <h2 className="mb-3 text-sm font-heading font-bold text-foreground">Newly Arrived Limit</h2>
         <div className="flex flex-col gap-3 sm:max-w-xs">
           <Select value={String(limit)} onValueChange={(value) => setLimit(value === "5" ? 5 : 6)}>
@@ -120,7 +120,7 @@ const BlogShowcaseAdmin = () => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border bg-card p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h3 className="text-sm font-heading font-bold text-foreground">Newly Arrived Preview ({newlyArrivedBlogs.length})</h3>
           <p className="mb-3 mt-1 text-xs text-muted-foreground">These blogs appear in the 3D auto slider.</p>
           <div className="space-y-2">
@@ -140,7 +140,7 @@ const BlogShowcaseAdmin = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-5">
+        <div className="rounded-lg border bg-card p-4 sm:p-5">
           <h3 className="text-sm font-heading font-bold text-foreground">More Blogs Preview ({moreBlogs.length})</h3>
           <p className="mb-3 mt-1 text-xs text-muted-foreground">Older blogs automatically roll into this section.</p>
           <div className="space-y-2 max-h-[420px] overflow-auto pr-1">
