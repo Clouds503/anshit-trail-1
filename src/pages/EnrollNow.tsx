@@ -8,10 +8,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import PageSeoContent from "@/components/PageSeoContent";
 import { GraduationCap, CheckCircle2, Shield, Users, Award, CreditCard, Clock, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import PublicLongformContent from "@/components/PublicLongformContent";
+
+let razorpayScriptPromise: Promise<void> | null = null;
+
+const ensureRazorpayScript = async () => {
+  if ((window as any).Razorpay) return;
+  if (razorpayScriptPromise) return razorpayScriptPromise;
+
+  razorpayScriptPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.getElementById("razorpay-script") as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Razorpay checkout script")), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "razorpay-script";
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay checkout script"));
+    document.body.appendChild(script);
+  }).finally(() => {
+    if ((window as any).Razorpay) return;
+    razorpayScriptPromise = null;
+  });
+
+  return razorpayScriptPromise;
+};
 
 const benefits = [
   { icon: GraduationCap, text: "Industry-recognized certification" },
@@ -55,16 +88,6 @@ const EnrollNow = () => {
       setSelectedProgram(found || null);
     }
   }, [form.course, programs]);
-
-  useEffect(() => {
-    if (!document.getElementById("razorpay-script")) {
-      const script = document.createElement("script");
-      script.id = "razorpay-script";
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +148,7 @@ const EnrollNow = () => {
 
     setPaying(true);
     try {
+      await ensureRazorpayScript();
       const { data, error } = await supabase.functions.invoke("create-razorpay-order", {
         body: {
           amount: selectedProgram.price,
@@ -322,6 +346,16 @@ const EnrollNow = () => {
           </div>
         </div>
       </section>
+
+      <PageSeoContent
+        slug="enroll"
+        className="pt-0"
+        heroTitle="Enroll Now"
+        excludedHeadings={["enroll now", "start your journey"]}
+        minUsefulWords={720}
+      />
+
+      <PublicLongformContent variant="enroll" />
 
       <Footer />
       <WhatsAppButton />

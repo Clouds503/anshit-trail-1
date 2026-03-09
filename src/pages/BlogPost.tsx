@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import PublicLongformContent from "@/components/PublicLongformContent";
 import { motion } from "framer-motion";
 import { CalendarDays, ArrowLeft } from "lucide-react";
 import { getBlogPostBySlug } from "@/data/blogPosts";
@@ -275,6 +276,8 @@ const BlogPost = () => {
           </div>
         </div>
       </article>
+
+      <PublicLongformContent variant="blog-post" />
 
       <Footer />
       <WhatsAppButton />

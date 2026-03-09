@@ -18,9 +18,10 @@ const fallbackCourses = [
 interface ContactSectionProps {
   compact?: boolean;
   sourcePage?: string;
+  showSectionHeading?: boolean;
 }
 
-const ContactSection = ({ compact, sourcePage = "homepage" }: ContactSectionProps) => {
+const ContactSection = ({ compact, sourcePage = "homepage", showSectionHeading = true }: ContactSectionProps) => {
   const [form, setForm] = useState({ name: "", email: "", phone: "", course: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -140,10 +141,12 @@ const ContactSection = ({ compact, sourcePage = "homepage" }: ContactSectionProp
   return (
     <section id="contact" className="py-16 md:py-24">
       <div className="container">
-        <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">Get In Touch</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground">Contact Us</h2>
-        </motion.div>
+        {showSectionHeading ? (
+          <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">Get In Touch</p>
+            <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground">Contact Us</h2>
+          </motion.div>
+        ) : null}
 
         <div className="max-w-5xl mx-auto space-y-10">
           <motion.form

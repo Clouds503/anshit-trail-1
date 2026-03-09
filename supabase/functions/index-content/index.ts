@@ -138,12 +138,14 @@ serve(async (req) => {
       .select("key, value");
 
     const map = toSettingsMap((settings || []) as SiteSettingRow[]);
-    const siteUrl =
-      normalizeBaseUrl(
-        readSettingString(map, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
-        Deno.env.get("SITE_URL") ||
-        "",
-      ) || "https://cloudstrail.com";
+    const configuredSiteUrl = normalizeBaseUrl(
+      readSettingString(map, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
+      Deno.env.get("SITE_URL") ||
+      "",
+    );
+    const siteUrl = configuredSiteUrl === "https://www.cloudstrail.com"
+      ? configuredSiteUrl
+      : "https://www.cloudstrail.com";
 
     const configuredSitemapPath = readSettingString(map, ["sitemap_url"]);
     const sitemapUrl =

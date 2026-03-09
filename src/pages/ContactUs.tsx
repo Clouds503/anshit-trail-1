@@ -23,8 +23,14 @@ const ContactUs = () => {
       <MarqueeBanner items={["Admissions Open 2026", "100% Placement Assistance", "Free Demo Classes"]} />
       <Header />
       <PageHero title="Contact Us" subtitle="Get in touch with our team" imageUrl={heroImage} />
-      <ContactSection />
-      <PageSeoContent slug="contact" className="pt-2" />
+      <ContactSection showSectionHeading={false} />
+      <PageSeoContent
+        slug="contact"
+        className="pt-2"
+        heroTitle="Contact Us"
+        excludedHeadings={["contact us", "our location & contact"]}
+        minUsefulWords={760}
+      />
       <Footer />
       <WhatsAppButton />
     </div>

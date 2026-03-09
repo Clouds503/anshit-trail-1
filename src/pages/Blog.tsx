@@ -2,6 +2,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import PublicLongformContent from "@/components/PublicLongformContent";
+import PageSeoContent from "@/components/PageSeoContent";
 import { motion } from "framer-motion";
 import { CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -118,6 +120,16 @@ const Blog = () => {
           </div>
         </div>
       </section>
+
+      <PageSeoContent
+        slug="blog"
+        className="pt-0"
+        heroTitle="Latest Insights & Resources"
+        excludedHeadings={["latest insights & resources", "our blog"]}
+        minUsefulWords={720}
+      />
+
+      <PublicLongformContent variant="blog" />
 
       <Footer />
       <WhatsAppButton />

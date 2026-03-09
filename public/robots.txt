@@ -5,4 +5,4 @@ Disallow: /functions
 Disallow: /functions/
 Allow: /
 
-Sitemap: https://cloudstrail.com/sitemap.xml
+Sitemap: https://www.cloudstrail.com/sitemap.xml

@@ -6,6 +6,11 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import PageHero from "@/components/PageHero";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import { cn } from "@/lib/utils";
+import {
+  ensureMinimumUsefulWords,
+  normalizeSeoContentBlocks,
+  type SeoContentBlock,
+} from "@/lib/seo-content-normalizer";
 
 type BlockStyle = {
   size?: "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
@@ -13,14 +18,7 @@ type BlockStyle = {
   underline?: boolean;
 };
 
-interface ContentBlock {
-  type: "heading" | "subheading" | "paragraph" | "list" | "image";
-  text?: string;
-  items?: string[];
-  url?: string;
-  alt?: string;
-  style?: BlockStyle;
-}
+type ContentBlock = SeoContentBlock & { style?: BlockStyle };
 
 interface PageData {
   page_title: string;
@@ -56,7 +54,16 @@ const DynamicPage = ({ slug, beforeFooter }: DynamicPageProps) => {
       const { data } = await (supabase as any).from("page_content").select("*").eq("page_slug", slug).eq("is_active", true).maybeSingle();
       if (data) {
         const content = typeof data.content === "string" ? JSON.parse(data.content) : data.content;
-        setPage({ ...data, content: Array.isArray(content) ? content : [] });
+        const blocks = normalizeSeoContentBlocks(Array.isArray(content) ? content : [], {
+          heroTitle: data.page_title || "",
+          pageTitle: data.page_title || slug,
+        });
+        const withDepth = ensureMinimumUsefulWords(blocks, {
+          minWords: 780,
+          pageLabel: data.page_title || slug,
+          focusTopic: data.hero_subtitle || "",
+        });
+        setPage({ ...data, content: withDepth as ContentBlock[] });
       }
       setLoading(false);
     })();

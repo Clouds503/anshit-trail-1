@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  ensureMinimumUsefulWords,
+  normalizeSeoContentBlocks,
+  type SeoContentBlock,
+} from "@/lib/seo-content-normalizer";
 
 type BlockStyle = {
   size?: "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
@@ -34,20 +39,45 @@ const textClasses = (style?: BlockStyle, fallbackSize: NonNullable<BlockStyle["s
     style?.underline ? "underline" : "",
   );
 
-const PageSeoContent = ({ slug, className = "" }: { slug: string; className?: string }) => {
+type PageSeoContentProps = {
+  slug: string;
+  className?: string;
+  heroTitle?: string;
+  excludedHeadings?: string[];
+  minUsefulWords?: number;
+};
+
+const PageSeoContent = ({
+  slug,
+  className = "",
+  heroTitle,
+  excludedHeadings,
+  minUsefulWords = 420,
+}: PageSeoContentProps) => {
   const { data } = useQuery({
     queryKey: ["page-seo-content", slug],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("page_content")
-        .select("content,is_active")
+        .select("page_title,hero_subtitle,content,is_active")
         .eq("page_slug", slug)
         .eq("is_active", true)
         .maybeSingle();
 
       if (!data?.content) return [];
       const content = typeof data.content === "string" ? JSON.parse(data.content) : data.content;
-      return Array.isArray(content) ? (content as ContentBlock[]) : [];
+      const blocks = Array.isArray(content) ? (content as SeoContentBlock[]) : [];
+      const normalized = normalizeSeoContentBlocks(blocks, {
+        heroTitle: heroTitle || data.page_title || data.hero_subtitle || "",
+        pageTitle: data.page_title || slug,
+        excludedHeadings,
+      });
+      const withDepth = ensureMinimumUsefulWords(normalized, {
+        minWords: minUsefulWords,
+        pageLabel: data.page_title || slug,
+        focusTopic: data.hero_subtitle || "",
+      });
+      return withDepth as ContentBlock[];
     },
   });
 

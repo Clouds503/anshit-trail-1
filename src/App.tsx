@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import PublicPageAnalytics from "./components/PublicPageAnalytics";
+import RouteSeoManager from "./components/RouteSeoManager";
 import Index from "./pages/Index";
 import CourseDetail from "./pages/CourseDetail";
 import Programs from "./pages/Programs";
@@ -59,6 +60,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
+        <RouteSeoManager />
         <PublicPageAnalytics />
         <Routes>
           {/* Public */}

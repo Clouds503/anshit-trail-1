@@ -152,12 +152,14 @@ serve(async (req) => {
     if (seoRes.error) throw seoRes.error;
 
     const settings = toSettingsMap(settingsRes.data);
-    const siteUrl =
-      normalizeBaseUrl(
-        readSettingString(settings, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
-          Deno.env.get("SITE_URL") ||
-          "",
-      ) || "https://cloudstrail.com";
+    const configuredSiteUrl = normalizeBaseUrl(
+      readSettingString(settings, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
+        Deno.env.get("SITE_URL") ||
+        "",
+    );
+    const siteUrl = configuredSiteUrl === "https://www.cloudstrail.com"
+      ? configuredSiteUrl
+      : "https://www.cloudstrail.com";
 
     const blockedPaths = new Set<string>();
     const seoRows = seoRes.data || [];

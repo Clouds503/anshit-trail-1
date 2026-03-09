@@ -54,7 +54,7 @@ const Programs = () => {
                     <h3 className="font-heading font-bold text-foreground text-sm md:text-lg mb-1 line-clamp-2">{program.title}</h3>
                     <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-4 line-clamp-2">{program.short_description || "Learn from industry experts"}</p>
                     <span className="text-xs md:text-sm font-semibold text-primary inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                      View Details <ArrowRight className="h-3.5 w-3.5" />
+                      {`Explore ${program.title}`} <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
                 </motion.div>
@@ -64,7 +64,13 @@ const Programs = () => {
         </div>
       </section>
 
-      <PageSeoContent slug="programs" className="pt-0" />
+      <PageSeoContent
+        slug="programs"
+        className="pt-0"
+        heroTitle="Our Training Programs"
+        excludedHeadings={["our training programs", "trending programs"]}
+        minUsefulWords={760}
+      />
 
       <Footer />
       <WhatsAppButton />

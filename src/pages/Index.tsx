@@ -102,7 +102,19 @@ const Index = () => {
         <OurStudentsSection />
         <FAQContactSection />
         <LatestBlogsSection />
-        <PageSeoContent slug="home" className="pt-0" />
+        <PageSeoContent
+          slug="home"
+          className="pt-0"
+          heroTitle="Launch Your Tech Career with Expert Training"
+          excludedHeadings={[
+            "trending programs",
+            "latest insights",
+            "common questions",
+            "contact us",
+            "ready to start your tech career",
+          ]}
+          minUsefulWords={760}
+        />
         <CTASection />
         <Footer />
         <WhatsAppButton />

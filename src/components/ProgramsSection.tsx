@@ -52,7 +52,7 @@ const ProgramsSection = () => {
                   <h3 className="font-heading font-bold text-foreground mb-0.5">{program.title}</h3>
                   <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{program.short_description || "Learn from industry experts"}</p>
                   <span className="text-sm font-semibold text-primary inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                    View Details <ArrowRight className="h-3.5 w-3.5" />
+                    {`Explore ${program.title}`} <ArrowRight className="h-3.5 w-3.5" />
                   </span>
                 </div>
               </motion.div>

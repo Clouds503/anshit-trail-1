@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, CheckCircle2, Download, GraduationCap, Shield, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import PublicLongformContent from "@/components/PublicLongformContent";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -215,6 +216,8 @@ const CourseDetail = () => {
           </motion.div>
         </div>
       </div>
+
+      <PublicLongformContent variant="course-detail" title={`Career roadmap for ${program.title}`} />
 
       <Footer />
       <WhatsAppButton />

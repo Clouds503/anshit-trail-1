@@ -101,7 +101,7 @@ const TrendingPrograms = () => {
                       {isCenter && (
                         <Link to={`/course/${prog.slug}`}>
                           <Button size="sm" className="w-full text-xs">
-                            Learn More <ArrowRight className="h-3 w-3 ml-1" />
+                            {`Learn ${prog.title}`} <ArrowRight className="h-3 w-3 ml-1" />
                           </Button>
                         </Link>
                       )}

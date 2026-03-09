@@ -8,16 +8,16 @@
     <title>Clouds Trail - #1 IT Training Institute</title>
     <meta name="description" content="Clouds Trail offers industry-leading IT certification programs with 100% placement support. Master Cloud, AI, DevOps & more." />
     <meta name="author" content="Clouds Trail" />
-    <link rel="canonical" href="https://cloudstrail.com/" />
+    <link rel="canonical" href="https://www.cloudstrail.com/" />
 
     <meta property="og:site_name" content="Clouds Trail" />
     <meta property="og:locale" content="en_IN" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Clouds Trail - #1 IT Training Institute" />
     <meta property="og:description" content="Clouds Trail offers industry-leading IT certification programs with 100% placement support. Master Cloud, AI, DevOps & more." />
-    <meta property="og:url" content="https://cloudstrail.com/" />
-    <meta property="og:image" content="https://cloudstrail.com/og-image.png" />
-    <meta property="og:image:secure_url" content="https://cloudstrail.com/og-image.png" />
+    <meta property="og:url" content="https://www.cloudstrail.com/" />
+    <meta property="og:image" content="https://www.cloudstrail.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://www.cloudstrail.com/og-image.png" />
     <meta property="og:image:alt" content="Clouds Trail IT training institute" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -25,11 +25,42 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Clouds Trail - #1 IT Training Institute" />
     <meta name="twitter:description" content="Industry-leading IT certification programs with 100% placement support." />
-    <meta name="twitter:image" content="https://cloudstrail.com/og-image.png" />
+    <meta name="twitter:image" content="https://www.cloudstrail.com/og-image.png" />
+
+    <script>
+      (function () {
+        var ORIGIN = "https://www.cloudstrail.com";
+        var path = (window.location.pathname || "/").replace(/\/{2,}/g, "/");
+        if (path.length > 1) path = path.replace(/\/+$/, "");
+        var aliasMap = {
+          "/home": "/",
+          "/about-us": "/about",
+          "/courses": "/programs",
+          "/blogs": "/blog",
+          "/privacy-policy": "/privacy",
+          "/terms-condition": "/terms",
+          "/terms-conditions": "/terms",
+          "/terms-and-conditions": "/terms",
+          "/terms-of-service": "/terms",
+          "/refund-policy": "/refund",
+        };
+        if (/^\/blogs\/[^/]+$/i.test(path)) {
+          path = "/blog/" + (path.split("/")[2] || "");
+        } else if (/^\/courses\/[^/]+$/i.test(path)) {
+          path = "/course/" + (path.split("/")[2] || "");
+        } else if (aliasMap[path]) {
+          path = aliasMap[path];
+        }
+        var canonical = ORIGIN + path;
+        var canonicalTag = document.head.querySelector('link[rel="canonical"]');
+        if (canonicalTag) canonicalTag.setAttribute("href", canonical);
+        var ogUrl = document.head.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute("content", canonical);
+      })();
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKJ801DZNX"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C0V417G1PH"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag() {

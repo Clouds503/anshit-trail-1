@@ -836,9 +836,47 @@ function buildSchemaMarkup(
   };
 }
 
+const GENERIC_ANCHOR_KEYS = new Set([
+  "click here",
+  "learn more",
+  "read more",
+  "view details",
+  "view more",
+  "know more",
+  "details",
+  "more",
+  "explore now",
+]);
+
+function pathToLabel(path: string): string {
+  if (!path || path === "/") return "Clouds Trail";
+  const token = path.replace(/^\/+/, "").split("/").filter(Boolean).slice(-1)[0] || "";
+  return trimToLength(token.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim(), 50) || "Clouds Trail";
+}
+
+function isGenericAnchorText(anchor: string): boolean {
+  const key = normalizeTextKey(anchor);
+  if (!key) return true;
+  if (GENERIC_ANCHOR_KEYS.has(key)) return true;
+  return /^(view|learn|read|explore|discover)\b/.test(key) && key.split(" ").length <= 2;
+}
+
+function makeContextualAnchor(
+  anchor: string,
+  targetPath: string,
+  pageName: string,
+): string {
+  const cleaned = trimToLength(anchor, 70);
+  if (!isGenericAnchorText(cleaned)) return cleaned;
+  const targetLabel = pathToLabel(targetPath);
+  const sourceLabel = trimToLength(pageName, 34);
+  return trimToLength(`Explore ${targetLabel} for ${sourceLabel}`, 70);
+}
+
 function normalizeInternalLinks(
   raw: unknown,
   pagePath: string,
+  pageName: string,
   allPathsSet: Set<string>,
 ): Array<{ anchor_text: string; target_path: string }> {
   const out: Array<{ anchor_text: string; target_path: string }> = [];
@@ -848,9 +886,9 @@ function normalizeInternalLinks(
 
   for (const item of list) {
     if (!item || typeof item !== "object") continue;
-    const anchor = trimToLength(`${(item as any).anchor_text || ""}`, 70);
-    const anchorKey = normalizeTextKey(anchor);
     const target = canonicalizePath(`${(item as any).target_path || ""}`, "");
+    const anchor = makeContextualAnchor(`${(item as any).anchor_text || ""}`, target, pageName);
+    const anchorKey = normalizeTextKey(anchor);
     if (!anchor || !target || target === pagePath) continue;
     if (!allPathsSet.has(target) && !["/programs", "/blog", "/enroll", "/contact"].includes(target)) continue;
     if (!anchorKey || seenAnchors.has(anchorKey)) continue;
@@ -891,9 +929,9 @@ function buildIntelligentInternalLinks(
     if (item.score < 0.03) continue;
     if (targetsUsed.has(item.candidate.path)) continue;
     const anchorTemplates = [
-      `Explore ${item.candidate.name}`,
-      `${item.candidate.name} guide`,
-      `${item.candidate.name} course details`,
+      `Explore ${item.candidate.name} for ${page.name}`,
+      `${item.candidate.name} roadmap for ${page.name}`,
+      `${item.candidate.name} practical guide`,
     ];
     let anchor = anchorTemplates.find((candidate) => !anchorsUsed.has(candidate.toLowerCase())) || anchorTemplates[0];
     anchor = trimToLength(anchor, 70);
@@ -1603,6 +1641,159 @@ function buildShortDescription(source: string, fallback: string): string {
   return trimToLength(`${fallback || ""}`.replace(/\s+/g, " ").trim(), 120);
 }
 
+function dedupeEnrichedBlocks(
+  blocks: Array<Record<string, unknown>>,
+  pageTitle: string,
+): Array<Record<string, unknown>> {
+  const output: Array<Record<string, unknown>> = [];
+  const seenHeadingKeys = new Set<string>();
+  const blockedHeadingKeys = new Set<string>([normalizeTextKey(pageTitle)]);
+  let previousParagraphKey = "";
+
+  for (const block of blocks) {
+    const type = `${block.type || ""}`.toLowerCase();
+    if (!type) continue;
+
+    if (type === "heading" || type === "subheading") {
+      const text = trimToLength(`${block.text || ""}`, 200);
+      const key = normalizeTextKey(text);
+      if (!text || !key || blockedHeadingKeys.has(key) || seenHeadingKeys.has(key)) continue;
+      seenHeadingKeys.add(key);
+      output.push({ ...block, type, text });
+      previousParagraphKey = "";
+      continue;
+    }
+
+    if (type === "paragraph") {
+      const text = trimToLength(`${block.text || ""}`, 1500);
+      const key = normalizeTextKey(text);
+      if (!text || !key) continue;
+      if (previousParagraphKey && key === previousParagraphKey) continue;
+      output.push({ ...block, type, text });
+      previousParagraphKey = key;
+      continue;
+    }
+
+    if (type === "list") {
+      const rawItems = Array.isArray(block.items) ? block.items : [];
+      const items: string[] = [];
+      const seenItemKeys = new Set<string>();
+      for (const item of rawItems) {
+        const text = trimToLength(`${item || ""}`, 220);
+        const key = normalizeTextKey(text);
+        if (!text || !key || seenItemKeys.has(key)) continue;
+        seenItemKeys.add(key);
+        items.push(text);
+      }
+      if (!items.length) continue;
+      output.push({ type: "list", items });
+      previousParagraphKey = "";
+      continue;
+    }
+
+    if (type === "image") {
+      const url = trimToLength(`${block.url || ""}`, 1500);
+      if (!url) continue;
+      const alt = trimToLength(`${block.alt || "Section visual"}`, 140);
+      output.push({ type: "image", url, alt });
+      previousParagraphKey = "";
+    }
+  }
+
+  return output;
+}
+
+function ensureMinimumEnrichedDepth(
+  blocks: Array<Record<string, unknown>>,
+  pageTitle: string,
+  pageContext: string,
+  minWords = 720,
+): Array<Record<string, unknown>> {
+  let output = dedupeEnrichedBlocks(blocks, pageTitle);
+  let currentWords = blocksToPlainText(output, 12000)
+    .split(/\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean).length;
+
+  if (currentWords >= minWords) return output;
+
+  const fallbackBlocks: Array<Record<string, unknown>> = [
+    { type: "heading", text: `Practical roadmap for ${trimToLength(pageTitle, 90)}` },
+    {
+      type: "paragraph",
+      text:
+        `Use this section to build practical confidence for ${trimToLength(pageTitle, 90)}. Focus on consistent execution, measurable progress, and clear communication of results. ` +
+        `Create a repeatable weekly cycle where you learn, implement, review, and refine outcomes in realistic scenarios.`,
+    },
+    {
+      type: "paragraph",
+      text:
+        `Prioritize quality outputs such as structured notes, implementation checklists, and project-ready deliverables. ` +
+        `This improves retention and makes your work easier to present in interviews, mentoring sessions, and real team environments.`,
+    },
+    {
+      type: "list",
+      items: [
+        `Set weekly milestones for ${trimToLength(pageTitle, 60)}`,
+        "Track mistakes and convert them into reusable checklists",
+        "Practice role-based explanations with practical examples",
+        "Review outcomes with quality and consistency metrics",
+        "Improve outputs through regular feedback loops",
+      ],
+    },
+  ];
+
+  if (`${pageContext || ""}`.trim()) {
+    fallbackBlocks.push({
+      type: "paragraph",
+      text: `Keep your implementation aligned with this context: ${trimToLength(pageContext, 240)}. Convert each idea into action-oriented outcomes that can be validated and improved.`,
+    });
+  }
+
+  output = dedupeEnrichedBlocks([...output, ...fallbackBlocks], pageTitle);
+  currentWords = blocksToPlainText(output, 12000)
+    .split(/\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean).length;
+  if (currentWords >= minWords) return output;
+
+  for (let i = 1; i <= 6; i += 1) {
+    const extraBlocks: Array<Record<string, unknown>> = [
+      { type: "subheading", text: `Implementation priorities for ${trimToLength(pageTitle, 70)} phase ${i}` },
+      {
+        type: "paragraph",
+        text:
+          `Phase ${i} should convert learning into execution for ${trimToLength(pageTitle, 90)}. Work with measurable goals, validate outcomes using realistic tasks, and maintain concise documentation of what improved and why.`,
+      },
+      {
+        type: "paragraph",
+        text:
+          `Use weekly feedback loops to remove repeated mistakes, strengthen solution quality, and improve communication clarity. Build reusable templates and checklists so results become consistent across different scenarios.`,
+      },
+      {
+        type: "list",
+        items: [
+          `Set one outcome-driven milestone for phase ${i}`,
+          "Apply concepts in practical tasks with clear acceptance criteria",
+          "Track issues, decisions, and final improvements",
+          "Refine implementation quality through review and iteration",
+        ],
+      },
+    ];
+
+    output = dedupeEnrichedBlocks([...output, ...extraBlocks], pageTitle);
+    const nextWords = blocksToPlainText(output, 12000)
+      .split(/\s+/)
+      .map((item) => item.trim())
+      .filter(Boolean).length;
+    if (nextWords <= currentWords) break;
+    currentWords = nextWords;
+    if (currentWords >= minWords) break;
+  }
+
+  return output;
+}
+
 async function enqueueIndexingJobs(
   supabase: any,
   paths: string[],
@@ -1793,12 +1984,12 @@ serve(async (req) => {
     if (allSeoRes.error) throw allSeoRes.error;
 
     const settings = toSettingsMap(settingsRes.data);
-    const siteUrl =
-      normalizeBaseUrl(
-        readSettingString(settings, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
-          Deno.env.get("SITE_URL") ||
-          "",
-      ) || "https://cloudstrail.com";
+    const configuredSiteUrl = normalizeBaseUrl(
+      readSettingString(settings, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
+        Deno.env.get("SITE_URL") ||
+        "",
+    );
+    const siteUrl = "https://www.cloudstrail.com";
 
     const pageContentMap = new Map<string, any>();
     for (const row of pageContentRes.data || []) {
@@ -1896,6 +2087,9 @@ serve(async (req) => {
     const existingByPath = new Map(existingRows.map((row) => [canonicalizePath(row.page_path || ""), row]));
 
     const warnings: string[] = [];
+    if (configuredSiteUrl && configuredSiteUrl !== siteUrl) {
+      warnings.push(`site_url_overridden:${configuredSiteUrl}->${siteUrl}`);
+    }
     const pagesToProcess: PageCandidate[] = [];
     let skippedUnchanged = 0;
 
@@ -2021,7 +2215,11 @@ serve(async (req) => {
       if (keywords.length < 8) keywords = sanitizeKeywordList([...keywords, ...fallbackKeywords], fallbackKeywords);
       keywords = keywords.slice(0, 15);
 
-      const canonicalPath = canonicalizePath(`${generated.canonical_url || generated.page_path || page.path}`, page.path);
+      const aiCanonicalPath = canonicalizePath(`${generated.canonical_url || generated.page_path || page.path}`, page.path);
+      const canonicalPath = aiCanonicalPath === page.path ? aiCanonicalPath : page.path;
+      if (aiCanonicalPath !== page.path) {
+        warnings.push(`canonical_corrected:${page.path}:${aiCanonicalPath}`);
+      }
       const indexingEnabled = generated.indexing_enabled !== false;
       const robotsDirective = normalizeRobotsDirective(generated.robots_directive, indexingEnabled);
 
@@ -2036,7 +2234,7 @@ serve(async (req) => {
       const descriptionRaw = trimToLength(`${generated.description || descriptionFallback}`, 155);
       const description = ensureUniqueText(descriptionRaw, usedDescriptions, descriptionFallback, 155, "Clouds Trail");
 
-      const normalizedExistingInternal = normalizeInternalLinks(generated.internal_links, page.path, allPathsSet);
+      const normalizedExistingInternal = normalizeInternalLinks(generated.internal_links, page.path, page.name, allPathsSet);
       const intelligentLinks = buildIntelligentInternalLinks(page, allPages, normalizedExistingInternal);
       auditInternalLinksByPath.set(page.path, intelligentLinks);
       const headingSuggestions = sanitizeHeadingSuggestions(generated.heading_suggestions, title);
@@ -2232,8 +2430,16 @@ Rules:
           }
         }
 
+        const dedupedBlocks = dedupeEnrichedBlocks(cleanBlocks, `${enriched.page_title || page.name}`);
+        const finalBlocks = ensureMinimumEnrichedDepth(
+          dedupedBlocks,
+          `${enriched.page_title || page.name}`,
+          `${enriched.hero_subtitle || page.content || ""}`,
+          720,
+        );
+
         if (page.page_type === "program_detail" && existingProgram) {
-          const plainText = blocksToPlainText(cleanBlocks, 3500);
+          const plainText = blocksToPlainText(finalBlocks, 3500);
           const finalDescription = plainText || trimToLength(`${existingProgram.description || ""}`, 3500);
           const finalShortDescription = buildShortDescription(
             `${enriched.hero_subtitle || ""}`,
@@ -2259,8 +2465,8 @@ Rules:
         }
 
         if (page.page_type === "blog_post" && existingBlog) {
-          const markdownContent = blocksToMarkdown(cleanBlocks);
-          const excerptFromBlocks = blocksToPlainText(cleanBlocks, 220);
+          const markdownContent = blocksToMarkdown(finalBlocks);
+          const excerptFromBlocks = blocksToPlainText(finalBlocks, 220);
           const finalExcerpt = buildShortDescription(excerptFromBlocks, `${existingBlog.excerpt || ""}`);
           const blogUpdatePayload: Record<string, unknown> = {
             excerpt: finalExcerpt || null,
@@ -2285,8 +2491,8 @@ Rules:
         }
 
         const staticContent =
-          cleanBlocks.length > 0
-            ? cleanBlocks
+          finalBlocks.length > 0
+            ? finalBlocks
             : (Array.isArray(existingPage?.content) ? existingPage.content : []);
 
         const { error: contentUpsertError } = await supabase.from("page_content").upsert(
