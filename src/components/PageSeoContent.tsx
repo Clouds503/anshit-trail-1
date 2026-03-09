@@ -47,6 +47,9 @@ type PageSeoContentProps = {
   minUsefulWords?: number;
   limitToFirstBlocks?: number;
   skipFirstBlocks?: number;
+  allowedTypes?: ContentBlock["type"][];
+  segmentIndex?: number;
+  maxBlocksInSegment?: number;
 };
 
 const PageSeoContent = ({
@@ -57,6 +60,9 @@ const PageSeoContent = ({
   minUsefulWords = 420,
   limitToFirstBlocks,
   skipFirstBlocks = 0,
+  allowedTypes,
+  segmentIndex,
+  maxBlocksInSegment,
 }: PageSeoContentProps) => {
   const { data } = useQuery({
     queryKey: ["page-seo-content", slug],
@@ -88,21 +94,54 @@ const PageSeoContent = ({
   if (!data || data.length === 0) return null;
 
   let blocksToRender = data;
+  if (allowedTypes && allowedTypes.length > 0) {
+    blocksToRender = blocksToRender.filter((block) => allowedTypes.includes(block.type));
+  }
+  if (typeof segmentIndex === "number") {
+    const segments: ContentBlock[][] = [];
+    let currentSegment: ContentBlock[] = [];
+
+    blocksToRender.forEach((block) => {
+      if (block.type === "heading") {
+        if (currentSegment.length > 0) segments.push(currentSegment);
+        currentSegment = [block];
+        return;
+      }
+      if (currentSegment.length === 0) {
+        currentSegment = [block];
+        return;
+      }
+      currentSegment.push(block);
+    });
+
+    if (currentSegment.length > 0) segments.push(currentSegment);
+    blocksToRender = segments[segmentIndex] || [];
+  }
   if (skipFirstBlocks > 0) {
-    blocksToRender = data.slice(skipFirstBlocks);
+    blocksToRender = blocksToRender.slice(skipFirstBlocks);
   }
   if (limitToFirstBlocks) {
     blocksToRender = blocksToRender.slice(0, limitToFirstBlocks);
   }
+  if (maxBlocksInSegment) {
+    blocksToRender = blocksToRender.slice(0, maxBlocksInSegment);
+  }
+  if (blocksToRender.length === 0) return null;
 
   return (
     <section className={cn("py-14 md:py-16", className)}>
       <div className="container max-w-5xl">
-        <div className="space-y-6">
+        <div className="space-y-5 rounded-2xl border bg-card/75 p-4 shadow-sm sm:p-6">
           {blocksToRender.map((block, idx) => {
             if (block.type === "heading") {
               return (
-                <h2 key={idx} className={cn("font-heading text-foreground leading-tight", textClasses(block.style, "3xl"))}>
+                <h2
+                  key={idx}
+                  className={cn(
+                    "font-heading text-2xl font-black leading-tight tracking-tight text-foreground sm:text-3xl",
+                    textClasses(block.style, "3xl"),
+                  )}
+                >
                   {block.text}
                 </h2>
               );
@@ -110,7 +149,13 @@ const PageSeoContent = ({
 
             if (block.type === "subheading") {
               return (
-                <h3 key={idx} className={cn("font-heading text-foreground leading-snug", textClasses(block.style, "xl"))}>
+                <h3
+                  key={idx}
+                  className={cn(
+                    "font-heading text-xs font-bold uppercase tracking-[0.18em] text-primary sm:text-sm",
+                    textClasses(block.style, "sm"),
+                  )}
+                >
                   {block.text}
                 </h3>
               );
@@ -118,7 +163,13 @@ const PageSeoContent = ({
 
             if (block.type === "paragraph") {
               return (
-                <p key={idx} className={cn("text-muted-foreground leading-relaxed", textClasses(block.style, "base"))}>
+                <p
+                  key={idx}
+                  className={cn(
+                    "text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8",
+                    textClasses(block.style, "base"),
+                  )}
+                >
                   {block.text}
                 </p>
               );
@@ -126,7 +177,7 @@ const PageSeoContent = ({
 
             if (block.type === "list") {
               return (
-                <ul key={idx} className="list-disc pl-6 space-y-2 text-muted-foreground text-base leading-relaxed">
+                <ul key={idx} className="list-disc space-y-2.5 pl-6 text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
                   {(block.items || []).map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}

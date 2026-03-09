@@ -101,7 +101,7 @@ const LatestBlogsSection = () => {
   }, [queryClient]);
 
   return (
-    <section className="py-16 md:py-24 bg-muted/30">
+    <section className="overflow-x-clip py-16 md:py-24 bg-muted/30">
       <div className="container">
         <motion.div
           className="text-center mb-12"
@@ -116,9 +116,9 @@ const LatestBlogsSection = () => {
           </p>
         </motion.div>
 
-        <div className="relative flex items-center justify-center h-[340px]" style={{ perspective: "1200px" }}>
+        <div className="relative flex h-[340px] items-center justify-center overflow-hidden" style={{ perspective: "1200px" }}>
           <AnimatePresence mode="popLayout" custom={direction}>
-            {getVisibleCards().map((post, i) => {
+            {getVisibleCards().map((post) => {
               const isCenter = post.offset === 0;
               const x = post.offset * 280;
               const z = isCenter ? 0 : -120;
@@ -129,7 +129,7 @@ const LatestBlogsSection = () => {
               return (
                 <motion.div
                   key={`${post.slug}-${post.offset}`}
-                  className="absolute w-72"
+                  className={`absolute w-[88vw] max-w-72 ${isCenter ? "block" : "hidden sm:block"}`}
                   initial={{ x: direction > 0 ? 400 : -400, rotateY: direction > 0 ? -30 : 30, opacity: 0, scale: 0.7 }}
                   animate={{ x, rotateY, scale, opacity, z }}
                   exit={{ x: direction > 0 ? -400 : 400, rotateY: direction > 0 ? 30 : -30, opacity: 0, scale: 0.7 }}

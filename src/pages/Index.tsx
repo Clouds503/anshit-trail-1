@@ -29,6 +29,14 @@ const defaultTopBannerItems = [
   "25,000+ Students Trained",
 ];
 
+const homeSeoExcludedHeadings = [
+  "trending programs",
+  "latest insights",
+  "common questions",
+  "contact us",
+  "ready to start your tech career",
+];
+
 const Index = () => {
   const [loading, setLoading] = useState(true);
   const handleLoadComplete = useCallback(() => setLoading(false), []);
@@ -90,58 +98,101 @@ const Index = () => {
   return (
     <>
       {shouldShowPreloader && <Preloader onComplete={handleLoadComplete} />}
-      <div className={`min-h-screen bg-background ${shouldShowPreloader ? "overflow-hidden h-screen" : ""}`}>
+      <div className={`min-h-screen bg-background overflow-x-hidden ${shouldShowPreloader ? "overflow-hidden h-screen" : ""}`}>
         <MarqueeBanner items={topBannerItems} direction="left" />
         <Header />
         <main>
           <HeroSection />
-          <section className="py-8 md:py-10 border-y bg-accent/20">
+          <section className="border-y bg-accent/20 py-7 md:py-9">
             <div className="container max-w-6xl">
-              <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-foreground mb-3">
-                Salesforce and Workday Training at Clouds Trail
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-4">
-                Clouds Trail is a practical salesforce institute and IT institute focused on job-ready tracks for
-                salesforce admin, salesforce developer, sales force fundamentals, salesforce lwc, salesforce omni studio,
-                and workday training with mentorship and placement support.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
-                <Link to="/programs" className="text-sm font-medium text-primary hover:underline">Explore Salesforce Admin Track</Link>
-                <Link to="/programs" className="text-sm font-medium text-primary hover:underline">Explore Salesforce Developer Track</Link>
-                <Link to="/programs" className="text-sm font-medium text-primary hover:underline">Explore Salesforce LWC Modules</Link>
-                <Link to="/programs" className="text-sm font-medium text-primary hover:underline">Explore Salesforce Omni Studio Modules</Link>
-                <Link to="/programs" className="text-sm font-medium text-primary hover:underline">Explore Workday Training Programs</Link>
-                <Link to="/blog" className="text-sm font-medium text-primary hover:underline">Read Salesforce Career Guides</Link>
-                <Link to="/blog" className="text-sm font-medium text-primary hover:underline">Read Workday Learning Guides</Link>
-                <Link to="/enroll" className="text-sm font-medium text-primary hover:underline">Enroll in IT Institute Programs</Link>
-                <Link to="/about" className="text-sm font-medium text-primary hover:underline">About Clouds Trail Institute</Link>
-                <Link to="/contact" className="text-sm font-medium text-primary hover:underline">Contact Clouds Trail Team</Link>
-                <Link to="/terms" className="text-sm font-medium text-primary hover:underline">Review Terms and Conditions</Link>
-                <Link to="/privacy" className="text-sm font-medium text-primary hover:underline">Review Privacy Policy</Link>
+              <div className="rounded-2xl border bg-background/70 p-4 shadow-sm sm:p-6">
+                <h1 className="text-2xl font-heading font-extrabold text-foreground md:text-3xl">
+                  Salesforce and Workday Training at Clouds Trail
+                </h1>
+                <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                  Clouds Trail delivers practical IT training built for career transitions and growth. Learn through guided projects, mentor-led sessions, and interview-focused preparation across Salesforce, Workday, Cloud, Data, and DevOps tracks.
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-2.5 min-[520px]:grid-cols-2 md:grid-cols-3">
+                  <Link to="/programs" className="text-sm font-medium text-primary hover:underline">
+                    Explore Programs
+                  </Link>
+                  <Link to="/blog" className="text-sm font-medium text-primary hover:underline">
+                    Read Career Guides
+                  </Link>
+                  <Link to="/enroll" className="text-sm font-medium text-primary hover:underline">
+                    Enroll in a Program
+                  </Link>
+                  <Link to="/about" className="text-sm font-medium text-primary hover:underline">
+                    About Clouds Trail
+                  </Link>
+                  <Link to="/contact" className="text-sm font-medium text-primary hover:underline">
+                    Contact Our Team
+                  </Link>
+                  <Link to="/privacy" className="text-sm font-medium text-primary hover:underline">
+                    Privacy and Policies
+                  </Link>
+                </div>
               </div>
             </div>
           </section>
+          <PageSeoContent
+            slug="home"
+            className="py-5 md:py-6"
+            heroTitle="Launch Your Tech Career with Expert Training"
+            excludedHeadings={homeSeoExcludedHeadings}
+            minUsefulWords={520}
+            allowedTypes={["heading", "subheading", "paragraph"]}
+            segmentIndex={0}
+            maxBlocksInSegment={3}
+          />
           <TrustSection />
           <StatsSection />
+          <PageSeoContent
+            slug="home"
+            className="py-5 md:py-6"
+            heroTitle="Launch Your Tech Career with Expert Training"
+            excludedHeadings={homeSeoExcludedHeadings}
+            minUsefulWords={520}
+            allowedTypes={["heading", "subheading", "paragraph"]}
+            segmentIndex={1}
+            maxBlocksInSegment={3}
+          />
           <TrendingPrograms />
           <ProcessSection />
+          <PageSeoContent
+            slug="home"
+            className="py-5 md:py-6"
+            heroTitle="Launch Your Tech Career with Expert Training"
+            excludedHeadings={homeSeoExcludedHeadings}
+            minUsefulWords={520}
+            allowedTypes={["heading", "subheading", "paragraph"]}
+            segmentIndex={2}
+            maxBlocksInSegment={3}
+          />
           <TestimonialsSection />
           <OurTrainersSection />
           <OurStudentsSection />
+          <PageSeoContent
+            slug="home"
+            className="py-5 md:py-6"
+            heroTitle="Launch Your Tech Career with Expert Training"
+            excludedHeadings={homeSeoExcludedHeadings}
+            minUsefulWords={520}
+            allowedTypes={["heading", "subheading", "paragraph"]}
+            segmentIndex={3}
+            maxBlocksInSegment={3}
+          />
           <FAQContactSection />
           <LatestBlogsSection />
           <PageSeoContent
             slug="home"
-            className="pt-0"
+            className="py-5 md:py-6"
             heroTitle="Launch Your Tech Career with Expert Training"
-            excludedHeadings={[
-              "trending programs",
-              "latest insights",
-              "common questions",
-              "contact us",
-              "ready to start your tech career",
-            ]}
-            minUsefulWords={760}
+            excludedHeadings={homeSeoExcludedHeadings}
+            minUsefulWords={520}
+            allowedTypes={["heading", "subheading", "paragraph"]}
+            segmentIndex={4}
+            maxBlocksInSegment={3}
           />
           <CTASection />
         </main>
