@@ -40,6 +40,7 @@ import LeadsAdmin from "./pages/admin/LeadsAdmin";
 import PagesAdmin from "./pages/admin/PagesAdmin";
 import EnrollmentsAdmin from "./pages/admin/EnrollmentsAdmin";
 import BlogTypographyAdmin from "./pages/admin/BlogTypographyAdmin";
+import BlogShowcaseAdmin from "./pages/admin/BlogShowcaseAdmin";
 import TrainersAdmin from "./pages/admin/TrainersAdmin";
 import StudentsAdmin from "./pages/admin/StudentsAdmin";
 import HeaderAdmin from "./pages/admin/HeaderAdmin";
@@ -94,6 +95,7 @@ const App = () => (
           <Route path="/admin/best-courses" element={<AdminPage><BestCoursesAdmin /></AdminPage>} />
           <Route path="/admin/pages" element={<AdminPage><PagesAdmin /></AdminPage>} />
           <Route path="/admin/blogs" element={<AdminPage><BlogsAdmin /></AdminPage>} />
+          <Route path="/admin/blog-showcase" element={<AdminPage><BlogShowcaseAdmin /></AdminPage>} />
           <Route path="/admin/blog-editor" element={<AdminPage><BlogTypographyAdmin /></AdminPage>} />
           <Route path="/admin/auto-blog" element={<AdminPage><AutoBlogAdmin /></AdminPage>} />
           <Route path="/admin/blog-metrics" element={<AdminPage><BlogPerformanceAdmin /></AdminPage>} />

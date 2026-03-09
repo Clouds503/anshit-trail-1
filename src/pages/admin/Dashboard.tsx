@@ -44,6 +44,7 @@ const Dashboard = () => {
         <div className="flex flex-wrap gap-2">
           <Link to="/admin/programs" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90">Manage Programs</Link>
           <Link to="/admin/blogs" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90">Manage Blogs</Link>
+          <Link to="/admin/blog-showcase" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90">Blog Showcase</Link>
           <Link to="/admin/auto-blog" className="text-sm bg-accent text-accent-foreground px-4 py-2 rounded-lg hover:opacity-90">Auto Generate Blog</Link>
           <Link to="/admin/seo" className="text-sm bg-accent text-accent-foreground px-4 py-2 rounded-lg hover:opacity-90">SEO Settings</Link>
           <Link to="/admin/settings" className="text-sm bg-muted text-muted-foreground px-4 py-2 rounded-lg hover:opacity-90">Site Settings</Link>

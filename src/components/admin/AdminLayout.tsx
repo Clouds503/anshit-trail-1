@@ -13,6 +13,7 @@ const navItems = [
   { title: "Best Courses", url: "/admin/best-courses", icon: Star },
   { title: "Pages", url: "/admin/pages", icon: FileStack },
   { title: "Blogs", url: "/admin/blogs", icon: FileText },
+  { title: "Blog Showcase", url: "/admin/blog-showcase", icon: FileText },
   { title: "Blog Editor", url: "/admin/blog-editor", icon: FileText },
   { title: "Auto Blog", url: "/admin/auto-blog", icon: Bot },
   { title: "Blog Metrics", url: "/admin/blog-metrics", icon: BarChart3 },
