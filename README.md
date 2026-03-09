@@ -49,6 +49,7 @@ npm run preview
 - Edge functions are in `supabase/functions/`
 - SQL migrations are in `supabase/migrations/`
 - Project settings are in `supabase/config.toml`
+- Required edge function secret for image generation: `GEMINI_API_KEY`
 
 ## Repository Policy
 

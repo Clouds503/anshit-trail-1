@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { parseAIJson } from "../_shared/parse-ai-json.ts";
-import { buildPollinationsImageUrl } from "../_shared/pollinations.ts";
-import { uploadImageToCloudinary } from "../_shared/cloudinary.ts";
 import { createServiceClient, getEnv } from "../_shared/supabase.ts";
 
 const corsHeaders = {
@@ -51,10 +48,6 @@ function buildHighEnd3DPrompt(basePrompt: string, context: string): string {
     "If text appears despite constraints, it must be clean English only and fully legible.",
     "Strictly forbid non-English scripts, non-Latin characters, random glyphs, logos, brand marks, and watermarks.",
   ].join(" ");
-}
-
-function randomSeed() {
-  return Math.floor(Math.random() * 1000000000);
 }
 
 function getBearerToken(req: Request): string {
@@ -377,54 +370,6 @@ title, slug, excerpt, content, category, seo_title, seo_description, seo_keyword
   };
 }
 
-async function isUsableImage(url: string): Promise<boolean> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return false;
-    const type = (res.headers.get("content-type") || "").toLowerCase();
-    if (!type.includes("image")) return false;
-    const bytes = await res.arrayBuffer();
-    return bytes.byteLength > 8_000;
-  } catch {
-    return false;
-  }
-}
-
-async function generateManagedImage(
-  prompt: string,
-  width: number,
-  height: number,
-  cloudName: string,
-  uploadPreset: string,
-): Promise<string> {
-  let fallbackUrl = "";
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const generatedUrl = buildPollinationsImageUrl(prompt, {
-      width,
-      height,
-      model: "flux",
-      nologo: true,
-      seed: randomSeed(),
-    });
-    fallbackUrl = generatedUrl;
-
-    if (cloudName && uploadPreset) {
-      try {
-        const uploaded = await uploadImageToCloudinary(generatedUrl, cloudName, uploadPreset);
-        if (await isUsableImage(uploaded)) return uploaded;
-        fallbackUrl = uploaded || generatedUrl;
-      } catch {
-        // Continue with direct URL checks.
-      }
-    }
-
-    if (await isUsableImage(generatedUrl)) return generatedUrl;
-  }
-
-  return fallbackUrl;
-}
-
 async function requireAdminOrService(req: Request, supabase: any): Promise<{ caller: "admin" | "service" | "public"; userId: string }> {
   const token = getBearerToken(req);
   if (!token) return { caller: "public", userId: "public" };
@@ -601,12 +546,20 @@ async function generateViaGenerateImageFunction(
 
   if (!res.ok) {
     const err = await res.text().catch(() => "");
-    throw new Error(`generate-image function failed: ${res.status} ${err}`);
+    let message = err;
+    try {
+      const parsed = err ? JSON.parse(err) : null;
+      const parsedMessage = parsed?.error?.toString?.() || parsed?.message?.toString?.();
+      if (parsedMessage) message = parsedMessage;
+    } catch {
+      // Keep raw text.
+    }
+    throw new HttpError(res.status, `generate-image function failed (${res.status}): ${message || "unknown error"}`);
   }
 
   const body = await res.json().catch(() => null);
   const url = body?.url?.toString?.() || "";
-  if (!url) throw new Error("generate-image function returned empty url");
+  if (!url) throw new HttpError(502, "generate-image function returned empty url");
   return url;
 }
 
@@ -618,8 +571,6 @@ serve(async (req) => {
     const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
     if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
 
-    const CLOUD_NAME = Deno.env.get("CLOUDINARY_CLOUD_NAME") || "";
-    const UPLOAD_PRESET = Deno.env.get("CLOUDINARY_UPLOAD_PRESET") || "";
     const SUPABASE_URL = getEnv("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -694,43 +645,28 @@ serve(async (req) => {
       blogData.thumbnail_prompt || `Premium 3D editorial cover image for blog about ${topic}`,
       `Blog title: ${blogData.title || topic}. Excerpt: ${blogData.excerpt || topic}`,
     );
-    let thumbnailUrl = "";
-    if (blogData.generation_source === "fallback") {
-      thumbnailUrl = buildPollinationsImageUrl(thumbnailPrompt, {
-        width: 1200,
-        height: 630,
-        model: "flux",
-        nologo: true,
-        seed: randomSeed(),
-      });
-    } else {
-      try {
-        thumbnailUrl = await generateViaGenerateImageFunction(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-          prompt: thumbnailPrompt,
-          width: 1200,
-          height: 630,
-          model: "flux",
-          upload_to_cloudinary: true,
-          best_of: 5,
-          title: blogData.title || topic,
-          short_description: blogData.excerpt || "",
-          description: (blogData.content || "").slice(0, 900),
-          category: blogData.category || "Blog",
-          keywords: Array.isArray(blogData.seo_keywords) ? blogData.seo_keywords : (keywords || []),
-          visual_components: [
-            topic,
-            blogData.category || "technology",
-            "mentor and learners",
-            "workflow components",
-          ],
-          section_title: "blog cover",
-          audience: "Indian IT learners and job seekers",
-        });
-      } catch (edgeErr) {
-        console.error("generate-image function failed for thumbnail, using local fallback:", edgeErr);
-        thumbnailUrl = await generateManagedImage(thumbnailPrompt, 1200, 630, CLOUD_NAME, UPLOAD_PRESET);
-      }
-    }
+    const imageWarnings: string[] = [];
+    const thumbnailUrl = await generateViaGenerateImageFunction(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      prompt: thumbnailPrompt,
+      width: 1200,
+      height: 630,
+      model: "gemini-2.5-flash-image",
+      upload_to_cloudinary: true,
+      best_of: 1,
+      title: blogData.title || topic,
+      short_description: blogData.excerpt || "",
+      description: (blogData.content || "").slice(0, 900),
+      category: blogData.category || "Blog",
+      keywords: Array.isArray(blogData.seo_keywords) ? blogData.seo_keywords : (keywords || []),
+      visual_components: [
+        topic,
+        blogData.category || "technology",
+        "mentor and learners",
+        "workflow components",
+      ],
+      section_title: "blog cover",
+      audience: "Indian IT learners and job seekers",
+    });
 
     // Generate and upload inline images
     let content = `${blogData.content || ""}`;
@@ -762,9 +698,9 @@ serve(async (req) => {
             prompt: imgPrompt,
             width: 800,
             height: 450,
-            model: "flux",
+            model: "gemini-2.5-flash-image",
             upload_to_cloudinary: true,
-            best_of: 3,
+            best_of: 1,
             title: blogData.title || topic,
             short_description: blogData.excerpt || "",
             description: promptsToUse[i],
@@ -779,8 +715,9 @@ serve(async (req) => {
             audience: "Indian IT learners and professionals",
           });
         } catch (edgeErr) {
-          console.error("generate-image function failed for inline image, using local fallback:", edgeErr);
-          imgUrl = await generateManagedImage(imgPrompt, 800, 450, CLOUD_NAME, UPLOAD_PRESET);
+          const message = edgeErr instanceof Error ? edgeErr.message : String(edgeErr || "unknown error");
+          imageWarnings.push(`inline_image_failed:${i + 1}:${message}`);
+          continue;
         }
 
         if (placeholders[i]) {
@@ -845,7 +782,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       ...savedBlog,
       generation_source: blogData.generation_source,
-      generation_warning: blogData.generation_warning || null,
+      generation_warning: [blogData.generation_warning, ...imageWarnings].filter(Boolean).join(" | ") || null,
       workflow_status: publishNow ? "published" : "review",
       message: publishNow ? "Blog generated and published." : "Blog draft generated and moved to review.",
     }), {

@@ -1,14 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { parseAIJson } from "../_shared/parse-ai-json.ts";
-import { buildPollinationsImageUrl } from "../_shared/pollinations.ts";
-import { uploadImageToCloudinary } from "../_shared/cloudinary.ts";
 import { createServiceClient, getEnv } from "../_shared/supabase.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+class HttpError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
 
 const SEO_SYSTEM_PROMPT = `You are a senior technical SEO strategist for a premium IT training brand.
 Generate accurate, high-intent, and implementation-ready SEO metadata for Indian search context.
@@ -542,51 +547,38 @@ function buildHighEnd3DPrompt(basePrompt: string, context: string): string {
   ].join(" ");
 }
 
-async function generateManagedImage(
-  prompt: string,
-  width: number,
-  height: number,
-  cloudName: string,
-  uploadPreset: string,
+async function generateViaGenerateImageFunction(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  payload: Record<string, unknown>,
 ): Promise<string> {
-  const randomSeed = () => Math.floor(Math.random() * 1000000000);
-  const isUsableImage = async (url: string): Promise<boolean> => {
+  const res = await fetch(`${supabaseUrl}/functions/v1/generate-image`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => "");
+    let message = err;
     try {
-      const res = await fetch(url);
-      if (!res.ok) return false;
-      const type = (res.headers.get("content-type") || "").toLowerCase();
-      if (!type.includes("image")) return false;
-      const bytes = await res.arrayBuffer();
-      return bytes.byteLength > 8_000;
+      const parsed = err ? JSON.parse(err) : null;
+      const parsedMessage = parsed?.error?.toString?.() || parsed?.message?.toString?.();
+      if (parsedMessage) message = parsedMessage;
     } catch {
-      return false;
+      // Keep raw text.
     }
-  };
-
-  let fallbackUrl = "";
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const generatedUrl = buildPollinationsImageUrl(prompt, {
-      width,
-      height,
-      model: "flux",
-      nologo: true,
-      seed: randomSeed(),
-    });
-    fallbackUrl = generatedUrl;
-
-    if (cloudName && uploadPreset) {
-      try {
-        const uploaded = await uploadImageToCloudinary(generatedUrl, cloudName, uploadPreset);
-        if (await isUsableImage(uploaded)) return uploaded;
-        fallbackUrl = uploaded || generatedUrl;
-      } catch {
-        // Continue.
-      }
-    }
-
-    if (await isUsableImage(generatedUrl)) return generatedUrl;
+    throw new HttpError(res.status, `generate-image function failed (${res.status}): ${message || "unknown error"}`);
   }
-  return fallbackUrl;
+
+  const body = await res.json().catch(() => null);
+  const url = body?.url?.toString?.() || "";
+  if (!url) throw new HttpError(502, "generate-image returned empty url");
+  return url;
 }
 
 function buildPerformanceMap(
@@ -1674,8 +1666,6 @@ serve(async (req) => {
     const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY") || "";
     if (!GROQ_API_KEY) throw new Error("GROQ_API_KEY not configured");
 
-    const CLOUD_NAME = Deno.env.get("CLOUDINARY_CLOUD_NAME") || "";
-    const UPLOAD_PRESET = Deno.env.get("CLOUDINARY_UPLOAD_PRESET") || "";
     const SUPABASE_URL = getEnv("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -2075,7 +2065,26 @@ Rules:
           enriched.hero_image_prompt || `High-end 3D hero image for ${enriched.page_title || page.name}`,
           `Page: ${enriched.page_title || page.name}. Slug: ${pageSlug}.`,
         );
-        const heroImageUrl = await generateManagedImage(heroPrompt, 1600, 900, CLOUD_NAME, UPLOAD_PRESET);
+        let heroImageUrl = `${existingPage?.hero_image_url || ""}`.trim();
+        try {
+          heroImageUrl = await generateViaGenerateImageFunction(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+            prompt: heroPrompt,
+            width: 1600,
+            height: 900,
+            model: "gemini-2.5-flash-image",
+            upload_to_cloudinary: true,
+            best_of: 1,
+            title: enriched.page_title || page.name,
+            short_description: enriched.hero_subtitle || "",
+            description: `SEO page hero image for ${enriched.page_title || page.name}`,
+            category: "SEO",
+            keywords: [`${pageSlug}`, `${page.name}`, "Clouds Trail"],
+            section_title: "hero image",
+            audience: "Indian IT learners and job seekers",
+          });
+        } catch (err: any) {
+          warnings.push(`hero_image_failed:${page.path}:${err?.message || "unknown_error"}`);
+        }
 
         const cleanBlocks: any[] = [];
         for (const block of enriched.content as EnrichedBlock[]) {
@@ -2098,7 +2107,27 @@ Rules:
               block.image_prompt || block.alt || `High-end 3D visual for ${enriched.page_title || page.name}`,
               `Page: ${enriched.page_title || page.name}. Image alt: ${block.alt || "Section visual"}.`,
             );
-            const imageUrl = await generateManagedImage(imgPrompt, 1200, 675, CLOUD_NAME, UPLOAD_PRESET);
+            let imageUrl = "";
+            try {
+              imageUrl = await generateViaGenerateImageFunction(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+                prompt: imgPrompt,
+                width: 1200,
+                height: 675,
+                model: "gemini-2.5-flash-image",
+                upload_to_cloudinary: true,
+                best_of: 1,
+                title: enriched.page_title || page.name,
+                short_description: block.alt || "",
+                description: block.image_prompt || block.alt || `SEO section image for ${enriched.page_title || page.name}`,
+                category: "SEO",
+                keywords: [`${pageSlug}`, `${page.name}`],
+                section_title: block.alt || "content image",
+                audience: "Indian IT learners and job seekers",
+              });
+            } catch (err: any) {
+              warnings.push(`content_image_failed:${page.path}:${err?.message || "unknown_error"}`);
+              continue;
+            }
             cleanBlocks.push({
               type: "image",
               url: imageUrl,
@@ -2206,7 +2235,7 @@ Rules:
   } catch (e: any) {
     console.error("Auto-SEO error:", e);
     return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
+      status: e?.status || 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

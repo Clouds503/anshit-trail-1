@@ -82,13 +82,14 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
     prompt,
     width: options.width || 1200,
     height: options.height || 630,
-    model: options.model || "flux",
+    model: options.model || "gemini-2.5-flash-image",
     upload_to_cloudinary: options.uploadToCloudinary !== false,
-    best_of: 4,
+    best_of: 1,
   };
 
   let lastError: any = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  const maxNetworkAttempts = 2;
+  for (let attempt = 0; attempt < maxNetworkAttempts; attempt++) {
     try {
       const data = await invokeAdminFunction<{ url?: string }>("generate-image", { body: payload });
       if (!data?.url) throw new Error("Image generation returned no URL");
@@ -98,6 +99,10 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
       console.error("generate-image attempt", attempt + 1, "error:", err);
       const msg = String(err?.message || err);
       if (isNetworkTransportError(msg)) {
+        if (attempt < maxNetworkAttempts - 1) {
+          await new Promise((res) => setTimeout(res, 400 * (attempt + 1)));
+          continue;
+        }
         const supabaseHost = (() => {
           try {
             return new URL(String(import.meta.env.VITE_SUPABASE_URL || "")).host || "unknown-host";
@@ -109,10 +114,7 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
           `Cannot reach Supabase endpoint (${supabaseHost}). Check internet, DNS/VPN/firewall, and VITE_SUPABASE_URL.`,
         );
       }
-      // if client-side issue or 4xx, don't retry
-      if (/4\d{2}|bad request|unauthorized|forbidden|non-2xx/i.test(msg)) break;
-      // backoff
-      await new Promise((res) => setTimeout(res, 1000 * (attempt + 1)));
+      break;
     }
   }
 

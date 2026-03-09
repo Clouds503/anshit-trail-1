@@ -38,3 +38,40 @@ export async function uploadImageToCloudinary(imageUrl: string, cloudName: strin
   const uploadData = await uploadRes.json().catch(() => null);
   return uploadData?.secure_url || imageUrl;
 }
+
+function extensionFromMimeType(mimeType: string): string {
+  const normalized = `${mimeType || ""}`.toLowerCase();
+  if (normalized.includes("jpeg") || normalized.includes("jpg")) return "jpg";
+  if (normalized.includes("webp")) return "webp";
+  if (normalized.includes("gif")) return "gif";
+  return "png";
+}
+
+export async function uploadImageBytesToCloudinary(
+  imageBytes: Uint8Array,
+  mimeType: string,
+  cloudName: string,
+  uploadPreset: string,
+): Promise<string> {
+  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+  const extension = extensionFromMimeType(mimeType);
+  const blob = new Blob([imageBytes], { type: mimeType || "image/png" });
+  const form = new FormData();
+  form.append("upload_preset", uploadPreset);
+  form.append("file", blob, `generated-image.${extension}`);
+
+  const uploadRes = await fetch(endpoint, {
+    method: "POST",
+    body: form,
+  });
+
+  if (!uploadRes.ok) {
+    const errorBody = await uploadRes.text().catch(() => "");
+    throw new Error(`Cloudinary upload failed: ${uploadRes.status} ${errorBody}`);
+  }
+
+  const uploadData = await uploadRes.json().catch(() => null);
+  const secureUrl = uploadData?.secure_url?.toString?.() || "";
+  if (!secureUrl) throw new Error("Cloudinary upload succeeded but secure_url was missing.");
+  return secureUrl;
+}
