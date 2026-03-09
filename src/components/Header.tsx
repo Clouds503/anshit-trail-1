@@ -21,6 +21,11 @@ type HeaderContact = {
   href?: string | null;
 };
 
+type BrandingSettings = {
+  siteTitle: string;
+  headerLogoHeight: number;
+};
+
 const fallbackNavLinks: HeaderLink[] = [
   { label: "Home", href: "/" },
   { label: "Programs", href: "/programs" },
@@ -36,6 +41,11 @@ const fallbackContacts: HeaderContact[] = [
 ];
 
 const isInternalRoute = (href: string) => href.startsWith("/") && !href.startsWith("//");
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(12, Math.min(180, Math.round(parsed)));
+};
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,16 +74,36 @@ const Header = () => {
     },
   });
 
+  const { data: branding } = useQuery({
+    queryKey: ["site_branding_header"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("site_settings")
+        .select("key,value")
+        .in("key", ["site_title", "header_logo_height"]);
+
+      const map: Record<string, unknown> = {};
+      for (const row of data || []) map[`${row.key || ""}`] = row.value;
+
+      return {
+        siteTitle: `${map.site_title || "Clouds Trail"}`.trim() || "Clouds Trail",
+        headerLogoHeight: parsePositiveInt(map.header_logo_height, 40),
+      } as BrandingSettings;
+    },
+  });
+
   const links = navLinks?.length ? navLinks : fallbackNavLinks;
   const contacts = headerContacts?.length ? headerContacts : fallbackContacts;
   const phoneContact = contacts.find((c) => c.contact_type === "phone") || fallbackContacts[0];
   const ctaContact = contacts.find((c) => c.contact_type === "cta") || fallbackContacts[1];
+  const siteTitle = branding?.siteTitle || "Clouds Trail";
+  const headerLogoHeight = branding?.headerLogoHeight || 40;
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
       <div className="container flex items-center justify-between h-16">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="Clouds Trail" className="h-10" />
+          <img src={logo} alt={siteTitle} className="w-auto" style={{ height: `${headerLogoHeight}px` }} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-7">

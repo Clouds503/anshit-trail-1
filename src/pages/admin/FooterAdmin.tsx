@@ -26,13 +26,18 @@ const FooterAdmin = () => {
   useEffect(() => {
     (async () => {
       const { data } = await (supabase as any).from("site_settings").select("value").eq("key", "footer_bio").maybeSingle();
-      if (data) setBio(JSON.parse(data.value) || "");
+      if (!data) return;
+      try {
+        setBio(typeof data.value === "string" ? data.value : JSON.parse(data.value) || "");
+      } catch {
+        setBio(`${data.value || ""}`);
+      }
     })();
   }, []);
 
   const saveBio = async () => {
     setSaving(true);
-    await (supabase as any).from("site_settings").update({ value: JSON.stringify(bio) }).eq("key", "footer_bio");
+    await (supabase as any).from("site_settings").upsert({ key: "footer_bio", value: JSON.stringify(bio) }, { onConflict: "key" });
     toast.success("Footer bio updated");
     setSaving(false);
   };

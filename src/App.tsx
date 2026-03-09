@@ -66,45 +66,25 @@ const App = () => (
           {/* Public */}
           <Route path="/" element={<Index />} />
           <Route path="/course/:slug" element={<CourseDetail />} />
-          <Route path="/course/:slug/" element={<CourseDetail />} />
           <Route path="/programs" element={<Programs />} />
-          <Route path="/programs/" element={<Programs />} />
           <Route path="/courses" element={<Programs />} />
-          <Route path="/courses/" element={<Programs />} />
           <Route path="/about" element={<AboutUs />} />
-          <Route path="/about/" element={<AboutUs />} />
           <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/about-us/" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
-          <Route path="/contact/" element={<ContactUs />} />
           <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/" element={<Blog />} />
           <Route path="/blogs" element={<Blog />} />
-          <Route path="/blogs/" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/blog/:slug/" element={<BlogPost />} />
           <Route path="/blogs/:slug" element={<BlogPost />} />
-          <Route path="/blogs/:slug/" element={<BlogPost />} />
           <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/terms/" element={<TermsAndConditions />} />
           <Route path="/terms-condition" element={<TermsAndConditions />} />
-          <Route path="/terms-condition/" element={<TermsAndConditions />} />
           <Route path="/terms-conditions" element={<TermsAndConditions />} />
-          <Route path="/terms-conditions/" element={<TermsAndConditions />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-          <Route path="/terms-and-conditions/" element={<TermsAndConditions />} />
           <Route path="/terms-of-service" element={<TermsAndConditions />} />
-          <Route path="/terms-of-service/" element={<TermsAndConditions />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/privacy/" element={<PrivacyPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/privacy-policy/" element={<PrivacyPolicy />} />
           <Route path="/refund" element={<RefundPolicy />} />
-          <Route path="/refund/" element={<RefundPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/refund-policy/" element={<RefundPolicy />} />
           <Route path="/enroll" element={<EnrollNow />} />
-          <Route path="/enroll/" element={<EnrollNow />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />

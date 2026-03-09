@@ -50,11 +50,84 @@ const SettingsAdmin = () => {
     if (typeof value === "string") return value.toLowerCase() === "true";
     return Boolean(value);
   };
+  const asPositiveInt = (value: unknown, fallback: number) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(12, Math.min(180, Math.round(parsed)));
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-heading font-bold text-foreground mb-6">Site Settings</h1>
       <div className="space-y-6 max-w-lg">
+        <div className="bg-card border rounded-lg p-5">
+          <h2 className="font-heading font-bold text-sm text-foreground mb-3">Branding</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Site Title</label>
+              <Input
+                value={s("site_title")}
+                onChange={(e) => setSettings({ ...settings, site_title: e.target.value })}
+                placeholder="Clouds Trail"
+                maxLength={80}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Site Subtitle</label>
+              <Input
+                value={s("site_subtitle")}
+                onChange={(e) => setSettings({ ...settings, site_subtitle: e.target.value })}
+                placeholder="#1 IT Training Institute"
+                maxLength={120}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Site Description</label>
+              <Textarea
+                value={s("site_description")}
+                onChange={(e) => setSettings({ ...settings, site_description: e.target.value })}
+                placeholder="Short brand description used in footer and defaults."
+                rows={3}
+                maxLength={260}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Header Logo Height (px)</label>
+                <Input
+                  type="number"
+                  min={12}
+                  max={180}
+                  value={s("header_logo_height") || 40}
+                  onChange={(e) => setSettings({ ...settings, header_logo_height: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Footer Logo Height (px)</label>
+                <Input
+                  type="number"
+                  min={12}
+                  max={180}
+                  value={s("footer_logo_height") || 40}
+                  onChange={(e) => setSettings({ ...settings, footer_logo_height: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={async () => {
+                await saveSetting("site_title", `${settings.site_title || "Clouds Trail"}`.trim() || "Clouds Trail");
+                await saveSetting("site_subtitle", `${settings.site_subtitle || "#1 IT Training Institute"}`.trim() || "#1 IT Training Institute");
+                await saveSetting("site_description", `${settings.site_description || ""}`.trim());
+                await saveSetting("header_logo_height", asPositiveInt(settings.header_logo_height, 40));
+                await saveSetting("footer_logo_height", asPositiveInt(settings.footer_logo_height, 40));
+              }}
+              disabled={saving}
+            >
+              Save Branding
+            </Button>
+          </div>
+        </div>
+
         <div className="bg-card border rounded-lg p-5">
           <div className="space-y-4">
             <div>

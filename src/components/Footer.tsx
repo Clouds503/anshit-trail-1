@@ -6,6 +6,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import SocialLinks from "@/components/SocialLinks";
 
+type FooterBrandingSettings = {
+  siteTitle: string;
+  siteSubtitle: string;
+  siteDescription: string;
+  footerBio: string;
+  footerLogoHeight: number;
+};
+
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(12, Math.min(180, Math.round(parsed)));
+};
+
 const Footer = () => {
   const { data: contactInfo } = useQuery({
     queryKey: ["contact_info"],
@@ -33,10 +47,46 @@ const Footer = () => {
     },
   });
 
+  const { data: footerBranding } = useQuery({
+    queryKey: ["site_branding_footer"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("site_settings")
+        .select("key,value")
+        .in("key", [
+          "site_title",
+          "site_subtitle",
+          "site_description",
+          "footer_bio",
+          "footer_logo_height",
+        ]);
+
+      const map: Record<string, unknown> = {};
+      for (const row of data || []) map[`${row.key || ""}`] = row.value;
+
+      return {
+        siteTitle: `${map.site_title || "Clouds Trail"}`.trim() || "Clouds Trail",
+        siteSubtitle: `${map.site_subtitle || "#1 IT Training Institute"}`.trim() || "#1 IT Training Institute",
+        siteDescription:
+          `${map.site_description || "India's leading IT training institute with 100% placement assistance."}`.trim() ||
+          "India's leading IT training institute with 100% placement assistance.",
+        footerBio:
+          `${map.footer_bio || "India's leading IT training institute with 100% placement assistance."}`.trim() ||
+          "India's leading IT training institute with 100% placement assistance.",
+        footerLogoHeight: parsePositiveInt(map.footer_logo_height, 40),
+      } as FooterBrandingSettings;
+    },
+  });
+
   const address = contactInfo?.address || "Noida, Uttar Pradesh";
   const phone = contactInfo?.phone || "+91 99999 99999";
   const email = contactInfo?.email || "info@cloudstrail.com";
   const footerCols = footerSections ? Math.max(3, Math.min((footerSections.length || 0) + 2, 6)) : 4;
+  const brandTitle = footerBranding?.siteTitle || "Clouds Trail";
+  const brandSubtitle = footerBranding?.siteSubtitle || "#1 IT Training Institute";
+  const brandDescription = footerBranding?.siteDescription || "India's leading IT training institute with 100% placement assistance.";
+  const footerBio = footerBranding?.footerBio || brandDescription;
+  const footerLogoHeight = footerBranding?.footerLogoHeight || 40;
 
   return (
     <footer className="bg-secondary text-secondary-foreground">
@@ -47,10 +97,18 @@ const Footer = () => {
         >
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="inline-block mb-3 md:mb-4">
-              <img src={logo} alt="Clouds Trail" className="h-9 md:h-10 brightness-0 invert" />
+              <img
+                src={logo}
+                alt={brandTitle}
+                className="w-auto brightness-0 invert"
+                style={{ height: `${footerLogoHeight}px` }}
+              />
             </Link>
+            <p className="text-secondary-foreground/50 text-[10px] md:text-xs uppercase tracking-wide mb-1.5">
+              {brandSubtitle}
+            </p>
             <p className="text-secondary-foreground/60 text-xs md:text-sm leading-relaxed max-w-sm">
-              India&apos;s leading IT training institute with 100% placement assistance.
+              {footerBio || brandDescription}
             </p>
           </div>
 
@@ -107,7 +165,7 @@ const Footer = () => {
 
       <div className="border-t border-secondary-foreground/10">
         <div className="container py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
-          <p className="text-[10px] md:text-xs text-secondary-foreground/30 text-center">(c) 2026 Clouds Trail. All rights reserved.</p>
+          <p className="text-[10px] md:text-xs text-secondary-foreground/30 text-center">(c) 2026 {brandTitle}. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
             <Link to="/privacy" className="text-[10px] md:text-xs text-secondary-foreground/30 hover:text-primary transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="text-[10px] md:text-xs text-secondary-foreground/30 hover:text-primary transition-colors">Terms of Service</Link>
