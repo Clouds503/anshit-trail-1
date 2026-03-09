@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,12 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PageSeoContent from "@/components/PageSeoContent";
-import { GraduationCap, CheckCircle2, Shield, Users, Award, CreditCard, Clock, Calendar } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  GraduationCap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import PublicLongformContent from "@/components/PublicLongformContent";
 
 let razorpayScriptPromise: Promise<void> | null = null;
 
@@ -46,13 +50,6 @@ const ensureRazorpayScript = async () => {
   return razorpayScriptPromise;
 };
 
-const benefits = [
-  { icon: GraduationCap, text: "Industry-recognized certification" },
-  { icon: Users, text: "100% placement assistance" },
-  { icon: Shield, text: "7-day money-back guarantee" },
-  { icon: Award, text: "Learn from 300+ industry experts" },
-];
-
 const batchTimes = [
   "9:00 AM - 11:00 AM",
   "11:00 AM - 1:00 PM",
@@ -66,7 +63,12 @@ const EnrollNow = () => {
   const preselectedCourse = searchParams.get("course") || "";
 
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", course: preselectedCourse, message: "", preferred_batch_time: "",
+    name: "",
+    email: "",
+    phone: "",
+    course: preselectedCourse,
+    message: "",
+    preferred_batch_time: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -77,7 +79,11 @@ const EnrollNow = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any).from("programs").select("id, title, price, slug, next_batch_date").eq("is_active", true).order("sort_order");
+      const { data } = await (supabase as any)
+        .from("programs")
+        .select("id, title, price, slug, next_batch_date")
+        .eq("is_active", true)
+        .order("sort_order");
       if (data) setPrograms(data);
     })();
   }, []);
@@ -112,7 +118,6 @@ const EnrollNow = () => {
       return;
     }
 
-    // fire email notification
     const { data: emailData, error: emailError } = await supabase.functions.invoke("send-enquiry-email", {
       body: {
         name: form.name.trim(),
@@ -128,7 +133,7 @@ const EnrollNow = () => {
     if (emailError || (!emailData?.email?.admin?.sent && !emailData?.email?.user?.sent && !emailData?.success)) {
       toast.error("Enrollment submitted, but email delivery failed.");
     } else {
-      toast.success("Enrollment request submitted! We'll contact you shortly.");
+      toast.success("Enrollment request submitted. We will contact you shortly.");
     }
   };
 
@@ -172,11 +177,10 @@ const EnrollNow = () => {
         description: `Enrollment: ${form.course}`,
         order_id: data.order_id,
         prefill: { name: form.name, email: form.email, contact: form.phone },
-        theme: { color: "#6366f1" },
+        theme: { color: "#0ea5e9" },
         handler: async (response: any) => {
-          // Confirm enrollment and send email
           try {
-            const { data: confirmData } = await supabase.functions.invoke("confirm-enrollment", {
+            await supabase.functions.invoke("confirm-enrollment", {
               body: {
                 enrollment_id: data.enrollment_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -191,9 +195,11 @@ const EnrollNow = () => {
               batch_time: form.preferred_batch_time,
               next_batch_date: selectedProgram.next_batch_date,
             });
-          } catch {}
+          } catch {
+            // keep UX success state even if confirmation response is delayed
+          }
           setSubmitted(true);
-          toast.success("Payment successful! Enrollment confirmed. Check your email for receipt.");
+          toast.success("Payment successful. Enrollment confirmed.");
         },
       };
 
@@ -210,75 +216,122 @@ const EnrollNow = () => {
       <MarqueeBanner items={["Admissions Open 2026", "Limited Seats", "100% Placement Assistance", "Live Projects"]} />
       <Header />
 
-      <section className="py-12 md:py-20">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-            {/* Left - Info */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">Start Your Journey</p>
-              <h1 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground mb-4">Enroll Now</h1>
-              <p className="text-muted-foreground leading-relaxed mb-8">
-                Take the first step towards a rewarding tech career. Fill out the enrollment form and our counselors will guide you through the process.
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-sky-950 to-cyan-900 text-white">
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 16% 20%, rgba(56, 189, 248, 0.32), transparent 42%), radial-gradient(circle at 82% 5%, rgba(14, 165, 233, 0.24), transparent 33%)",
+          }}
+        />
+        <motion.div
+          className="pointer-events-none absolute -left-24 top-20 hidden h-72 w-72 rounded-full bg-sky-400/18 blur-3xl sm:block"
+          animate={{ x: [0, 24, 0], y: [0, -18, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="pointer-events-none absolute -right-28 bottom-2 hidden h-80 w-80 rounded-full bg-cyan-300/14 blur-3xl sm:block"
+          animate={{ x: [0, -20, 0], y: [0, 22, 0] }}
+          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+        />
+
+        <div className="container relative py-10 sm:py-16 md:py-20 lg:py-24">
+          <div className="grid items-start gap-7 sm:gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-4 sm:space-y-5"
+            >
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90 sm:text-xs sm:tracking-[0.22em]">
+                Start Your Journey
               </p>
-
-              <div className="space-y-4 mb-8">
-                {benefits.map((b) => (
-                  <div key={b.text} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                      <b.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-foreground text-sm font-medium">{b.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {selectedProgram?.next_batch_date && (
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2 text-primary font-semibold text-sm mb-1">
-                    <Calendar className="h-4 w-4" /> Next Batch
-                  </div>
-                  <p className="text-foreground text-sm font-medium">
-                    {new Date(selectedProgram.next_batch_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-accent/50 rounded-lg p-5 border">
-                <p className="text-sm text-foreground font-medium mb-1">💡 Need help choosing a program?</p>
-                <p className="text-xs text-muted-foreground">Our counselors will help you pick the right program based on your background and career goals.</p>
-              </div>
+              <h1 className="max-w-3xl break-words text-3xl font-heading font-black leading-tight sm:text-5xl lg:text-6xl">
+                Enroll Now
+              </h1>
+              <p className="max-w-2xl text-sm leading-relaxed text-white/80 sm:text-lg md:text-xl">
+                Choose your program, lock your preferred batch, and begin a structured learning path toward real career outcomes.
+              </p>
             </motion.div>
 
-            {/* Right - Form or Receipt */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-              {submitted && receipt ? (
-                <div className="bg-card rounded-xl border p-8">
-                  <div className="text-center mb-6">
-                    <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-heading font-bold text-foreground mb-1">Enrollment Confirmed! 🎉</h2>
-                    <p className="text-muted-foreground text-sm">A confirmation email with receipt has been sent.</p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-3 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Bill Number</span><span className="font-mono font-bold text-foreground">{receipt.bill_number}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Program</span><span className="font-medium text-foreground">{receipt.program}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Amount Paid</span><span className="font-bold text-green-600">₹{Number(receipt.amount).toLocaleString()}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Payment ID</span><span className="font-mono text-xs text-foreground">{receipt.payment_id}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Batch Time</span><span className="text-foreground">{receipt.batch_time}</span></div>
-                    {receipt.next_batch_date && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Next Batch</span><span className="text-foreground">{new Date(receipt.next_batch_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
-                    )}
-                  </div>
+            <motion.div
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, delay: 0.1 }}
+              className="rounded-3xl border border-white/20 bg-white/10 p-5 shadow-2xl shadow-slate-950/25 backdrop-blur-xl sm:p-6 md:p-8"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">Enrollment Snapshot</p>
+              <div className="mt-3 space-y-2.5">
+                <div className="rounded-xl border border-white/15 bg-white/10 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">Selected Program</p>
+                  <p className="text-sm text-white/90">{form.course || "Select a program in the form"}</p>
                 </div>
-              ) : submitted ? (
-                <div className="bg-card rounded-xl border p-8 text-center">
-                  <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-                  <h2 className="text-xl font-heading font-bold text-foreground mb-2">Enrollment Submitted!</h2>
-                  <p className="text-muted-foreground text-sm">Our team will reach out to you within 24 hours with the next steps.</p>
+                <div className="rounded-xl border border-white/15 bg-white/10 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">Program Fee</p>
+                  <p className="text-sm text-white/90">
+                    {selectedProgram?.price ? `INR ${Number(selectedProgram.price).toLocaleString()}` : "Visible after program selection"}
+                  </p>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="bg-card rounded-xl border p-7 space-y-4">
-                  <h3 className="font-heading font-bold text-lg text-foreground mb-2">Enrollment Form</h3>
+                <div className="rounded-xl border border-white/15 bg-white/10 p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">Next Batch</p>
+                  <p className="text-sm text-white/90">
+                    {selectedProgram?.next_batch_date
+                      ? new Date(selectedProgram.next_batch_date).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "Shown after program selection"}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
+      <section id="enroll-form" className="pb-8 md:pb-10">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45 }}
+            className="rounded-3xl border bg-card/70 p-4 shadow-sm sm:p-6 md:p-8"
+          >
+            {submitted && receipt ? (
+              <div className="max-w-3xl mx-auto">
+                <div className="mb-6 text-center">
+                  <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-green-500" />
+                  <h2 className="text-2xl font-heading font-extrabold text-foreground">Enrollment Confirmed</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Confirmation email and receipt details have been sent.</p>
+                </div>
+                <div className="rounded-xl border bg-muted/40 p-4 sm:p-5 space-y-3 text-sm">
+                  <div className="flex justify-between gap-3"><span className="text-muted-foreground">Bill Number</span><span className="font-mono font-bold text-foreground">{receipt.bill_number}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-muted-foreground">Program</span><span className="font-medium text-foreground">{receipt.program}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-muted-foreground">Amount Paid</span><span className="font-bold text-green-600">INR {Number(receipt.amount).toLocaleString()}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-muted-foreground">Payment ID</span><span className="font-mono text-xs text-foreground">{receipt.payment_id}</span></div>
+                  <div className="flex justify-between gap-3"><span className="text-muted-foreground">Batch Time</span><span className="text-foreground">{receipt.batch_time}</span></div>
+                  {receipt.next_batch_date ? (
+                    <div className="flex justify-between gap-3"><span className="text-muted-foreground">Next Batch</span><span className="text-foreground">{new Date(receipt.next_batch_date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span></div>
+                  ) : null}
+                </div>
+              </div>
+            ) : submitted ? (
+              <div className="max-w-3xl mx-auto text-center py-4">
+                <CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-primary" />
+                <h2 className="text-2xl font-heading font-extrabold text-foreground">Enrollment Submitted</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Our team will contact you within 24 hours with next steps.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-4">
+                <div className="text-center mb-2 sm:mb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Enrollment Form</p>
+                  <h2 className="mt-2 text-2xl font-heading font-extrabold text-foreground sm:text-3xl">Tell Us Your Program Preference</h2>
+                  <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">Fill your details, choose program and preferred batch, then submit or pay to confirm.</p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label className="text-foreground text-sm">Full Name *</Label>
                     <Input placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} className="mt-1 h-11 rounded-lg" />
@@ -287,75 +340,76 @@ const EnrollNow = () => {
                     <Label className="text-foreground text-sm">Email *</Label>
                     <Input type="email" placeholder="your@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={255} className="mt-1 h-11 rounded-lg" />
                   </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label className="text-foreground text-sm">Phone *</Label>
                     <Input type="tel" placeholder="+91 XXXXX XXXXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} maxLength={15} className="mt-1 h-11 rounded-lg" />
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">Select Program *</Label>
-                    <select value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })} className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-ring">
+                    <select value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })} className="mt-1 flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
                       <option value="">Choose a program</option>
                       {programs.map((p: any) => (
                         <option key={p.title} value={p.title}>
-                          {p.title}{p.price ? ` — ₹${p.price.toLocaleString()}` : ""}
+                          {p.title}{p.price ? ` - INR ${Number(p.price).toLocaleString()}` : ""}
                         </option>
                       ))}
                     </select>
                   </div>
+                </div>
 
-                  {/* Batch Time */}
-                  <div>
-                    <Label className="text-foreground text-sm flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Preferred Batch Time *</Label>
-                    <select value={form.preferred_batch_time} onChange={(e) => setForm({ ...form, preferred_batch_time: e.target.value })} className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-ring">
-                      <option value="">Select batch time</option>
-                      {batchTimes.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
+                <div>
+                  <Label className="text-foreground text-sm inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Preferred Batch Time *</Label>
+                  <select value={form.preferred_batch_time} onChange={(e) => setForm({ ...form, preferred_batch_time: e.target.value })} className="mt-1 flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">Select batch time</option>
+                    {batchTimes.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedProgram?.next_batch_date ? (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex items-start gap-2">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <p className="text-xs text-foreground">
+                      <span className="font-semibold">Next batch starts:</span>{" "}
+                      {new Date(selectedProgram.next_batch_date).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
                   </div>
+                ) : null}
 
-                  {selectedProgram?.next_batch_date && (
-                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary shrink-0" />
-                      <p className="text-xs text-foreground">
-                        <span className="font-semibold">Next batch starts:</span> {new Date(selectedProgram.next_batch_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </p>
-                    </div>
-                  )}
+                <div>
+                  <Label className="text-foreground text-sm">Message (optional)</Label>
+                  <Textarea placeholder="Any questions or preferences..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} className="mt-1 rounded-lg" rows={3} />
+                </div>
 
-                  <div>
-                    <Label className="text-foreground text-sm">Message (optional)</Label>
-                    <Textarea placeholder="Any questions or preferences..." value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} maxLength={500} className="mt-1 rounded-lg" rows={3} />
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button type="submit" disabled={submitting} className="flex-1 bg-primary text-primary-foreground font-semibold h-12 rounded-lg text-base">
-                      <GraduationCap className="mr-2 h-5 w-5" /> {submitting ? "Submitting..." : "Submit Enquiry"}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Button type="submit" disabled={submitting} className="h-12 rounded-lg bg-primary text-base font-semibold text-primary-foreground">
+                    <GraduationCap className="mr-2 h-5 w-5" /> {submitting ? "Submitting..." : "Submit Enquiry"}
+                  </Button>
+                  {selectedProgram?.price ? (
+                    <Button type="button" onClick={handlePayment} disabled={paying} variant="outline" className="h-12 rounded-lg border-primary text-base font-semibold text-primary">
+                      <CreditCard className="mr-2 h-5 w-5" /> {paying ? "Processing..." : `Pay INR ${Number(selectedProgram.price).toLocaleString()}`}
                     </Button>
-                    {selectedProgram?.price && (
-                      <Button type="button" onClick={handlePayment} disabled={paying} variant="outline" className="flex-1 h-12 rounded-lg text-base font-semibold border-primary text-primary">
-                        <CreditCard className="mr-2 h-5 w-5" /> {paying ? "Processing..." : `Pay ₹${selectedProgram.price.toLocaleString()}`}
-                      </Button>
-                    )}
-                  </div>
+                  ) : (
+                    <Button type="button" disabled variant="outline" className="h-12 rounded-lg text-base font-semibold">
+                      Select Program To Pay
+                    </Button>
+                  )}
+                </div>
 
-                  <p className="text-xs text-muted-foreground text-center">🔒 Your data is secure and never shared with third parties.</p>
-                </form>
-              )}
-            </motion.div>
-          </div>
+                <p className="text-center text-xs text-muted-foreground">Your details are used only for enrollment processing and learner support.</p>
+              </form>
+            )}
+          </motion.div>
         </div>
       </section>
-
-      <PageSeoContent
-        slug="enroll"
-        className="pt-0"
-        heroTitle="Enroll Now"
-        excludedHeadings={["enroll now", "start your journey"]}
-        minUsefulWords={720}
-      />
-
-      <PublicLongformContent variant="enroll" />
 
       <Footer />
       <WhatsAppButton />
