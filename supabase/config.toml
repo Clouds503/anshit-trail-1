@@ -1,0 +1,46 @@
+project_id = "fmnvxphifyqefyfykfft"
+
+[functions.auto-seo]
+verify_jwt = false
+
+[functions.auto-blog]
+verify_jwt = false
+
+[functions.process-blog-queue]
+verify_jwt = false
+
+[functions.research-blog-topics]
+verify_jwt = false
+
+[functions.extract-syllabus]
+verify_jwt = false
+
+[functions.generate-program-content]
+verify_jwt = false
+
+[functions.create-razorpay-order]
+verify_jwt = false
+
+[functions.bootstrap-admin]
+verify_jwt = true
+
+[functions.send-enquiry-email]
+verify_jwt = false
+
+[functions.confirm-enrollment]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.sitemap]
+verify_jwt = false
+
+[functions.index-content]
+verify_jwt = false
+
+[functions.publish-queued-blog]
+verify_jwt = false
+
+[functions.refresh-weak-blogs]
+verify_jwt = false
