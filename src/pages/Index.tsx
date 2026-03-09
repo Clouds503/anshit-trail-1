@@ -107,10 +107,13 @@ const Index = () => {
             <div className="container max-w-6xl">
               <div className="rounded-2xl border bg-background/70 p-4 shadow-sm sm:p-6">
                 <h1 className="text-2xl font-heading font-extrabold text-foreground md:text-3xl">
-                  Salesforce and Workday Training at Clouds Trail
+                  Salesforce Administration and Cloud Career Training at Clouds Trail
                 </h1>
                 <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                  Clouds Trail delivers practical IT training built for career transitions and growth. Learn through guided projects, mentor-led sessions, and interview-focused preparation across Salesforce, Workday, Cloud, Data, and DevOps tracks.
+                  Clouds Trail offers job-ready Salesforce programs and cloud salesforce training built for career growth. Learn through guided projects, mentor-led sessions, and interview-focused preparation across Salesforce, Workday, Cloud, Data, and DevOps tracks with placement support.
+                </p>
+                <p className="mt-2 max-w-4xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                  Learners who completed our training are currently placed at leading companies, and each program is designed to build practical skills for strong career outcomes.
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-2.5 min-[520px]:grid-cols-2 md:grid-cols-3">
                   <Link to="/programs" className="text-sm font-medium text-primary hover:underline">
