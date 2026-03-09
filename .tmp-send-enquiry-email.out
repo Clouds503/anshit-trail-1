@@ -1,1 +1,0 @@
-{"success":true,"email":{"admin":{"attempted":true,"sent":true,"error":""},"user":{"attempted":false,"sent":false,"error":"","skipped":true,"reason":"disabled_by_configuration"}}}

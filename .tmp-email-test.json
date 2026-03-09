@@ -1,9 +1,0 @@
-﻿{
-  "name": "Lead Test",
-  "email": "someone@example.com",
-  "phone": "9999999999",
-  "program": "Cloud Computing",
-  "leadType": "syllabus_download",
-  "downloadUrl": "https://example.com/syllabus.pdf",
-  "sourcePage": "course/cloud-computing"
-}
