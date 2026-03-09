@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createServiceClient } from "../_shared/supabase.ts";
 
 const corsHeaders = {
@@ -22,10 +21,34 @@ const STATIC_ROUTES: Array<Omit<SitemapEntry, "lastmod">> = [
   { path: "/contact", changefreq: "monthly", priority: 0.7 },
   { path: "/enroll", changefreq: "weekly", priority: 0.8 },
   { path: "/privacy", changefreq: "monthly", priority: 0.5 },
-  { path: "/privacy-policy", changefreq: "monthly", priority: 0.5 },
   { path: "/terms", changefreq: "monthly", priority: 0.5 },
   { path: "/refund", changefreq: "monthly", priority: 0.5 },
 ];
+
+const CANONICAL_ALIAS_MAP = new Map<string, string>([
+  ["/home", "/"],
+  ["/about-us", "/about"],
+  ["/courses", "/programs"],
+  ["/blogs", "/blog"],
+  ["/privacy-policy", "/privacy"],
+  ["/terms-condition", "/terms"],
+  ["/terms-conditions", "/terms"],
+  ["/terms-and-conditions", "/terms"],
+  ["/terms-of-service", "/terms"],
+  ["/refund-policy", "/refund"],
+]);
+
+function isInternalPath(value: unknown): value is string {
+  return typeof value === "string" && value.trim().startsWith("/") && !value.trim().startsWith("//");
+}
+
+function isDynamicPublicPath(path: string): boolean {
+  return /^\/blog\/[^/]+$/i.test(path) || /^\/course\/[^/]+$/i.test(path);
+}
+
+function isDiscoverablePath(path: string, allowlist: Set<string>): boolean {
+  return allowlist.has(path) || isDynamicPublicPath(path);
+}
 
 function parseSettingValue(value: unknown): unknown {
   let current: unknown = value;
@@ -84,7 +107,7 @@ function normalizePath(raw: unknown): string | null {
   if (!value.startsWith("/")) value = `/${value}`;
   value = value.replace(/\/{2,}/g, "/");
   value = value.length > 1 ? value.replace(/\/+$/, "") : value;
-  if (value === "/home") value = "/";
+  value = CANONICAL_ALIAS_MAP.get(value) || value;
   if (value.startsWith("/admin")) return null;
   if (value.startsWith("/functions")) return null;
   return value || "/";
@@ -137,12 +160,14 @@ serve(async (req) => {
       });
     }
 
-    const [settingsRes, pagesRes, programsRes, blogsRes, seoRes] = await Promise.all([
+    const [settingsRes, pagesRes, programsRes, blogsRes, seoRes, headerLinksRes, footerLinksRes] = await Promise.all([
       supabase.from("site_settings").select("key,value"),
       supabase.from("page_content").select("page_slug,updated_at,is_active"),
       supabase.from("programs").select("slug,updated_at,is_active"),
       supabase.from("blogs").select("slug,updated_at,is_published"),
       supabase.from("seo_settings").select("page_path,canonical_url,indexing_enabled,updated_at"),
+      supabase.from("header_links").select("href,is_active"),
+      supabase.from("footer_links").select("url,is_active"),
     ]);
 
     if (settingsRes.error) throw settingsRes.error;
@@ -150,6 +175,8 @@ serve(async (req) => {
     if (programsRes.error) throw programsRes.error;
     if (blogsRes.error) throw blogsRes.error;
     if (seoRes.error) throw seoRes.error;
+    if (headerLinksRes.error && headerLinksRes.error.code !== "42P01") throw headerLinksRes.error;
+    if (footerLinksRes.error && footerLinksRes.error.code !== "42P01") throw footerLinksRes.error;
 
     const settings = toSettingsMap(settingsRes.data);
     const configuredSiteUrl = normalizeBaseUrl(
@@ -170,6 +197,24 @@ serve(async (req) => {
     }
 
     const map = new Map<string, SitemapEntry>();
+    const discoverablePathSet = new Set<string>();
+    for (const route of STATIC_ROUTES) {
+      const normalized = normalizePath(route.path);
+      if (normalized) discoverablePathSet.add(normalized);
+    }
+    for (const row of headerLinksRes.data || []) {
+      if (row.is_active === false) continue;
+      if (!isInternalPath(row.href)) continue;
+      const normalized = normalizePath(row.href);
+      if (normalized) discoverablePathSet.add(normalized);
+    }
+    for (const row of footerLinksRes.data || []) {
+      if (row.is_active === false) continue;
+      if (!isInternalPath(row.url)) continue;
+      const normalized = normalizePath(row.url);
+      if (normalized) discoverablePathSet.add(normalized);
+    }
+
     const addEntry = (entry: SitemapEntry) => {
       if (blockedPaths.has(entry.path)) return;
       const existing = map.get(entry.path);
@@ -191,7 +236,7 @@ serve(async (req) => {
     const activePages = (pagesRes.data || []).filter((row) => row.is_active !== false);
     for (const page of activePages) {
       const path = normalizePath(page.page_slug === "home" ? "/" : `/${page.page_slug}`);
-      if (!path) continue;
+      if (!path || !isDiscoverablePath(path, discoverablePathSet)) continue;
       addEntry({
         path,
         lastmod: toIsoDate(page.updated_at),
@@ -227,7 +272,7 @@ serve(async (req) => {
     for (const seoRow of seoRows) {
       if (seoRow.indexing_enabled === false) continue;
       const path = normalizePath(seoRow.canonical_url || seoRow.page_path);
-      if (!path) continue;
+      if (!path || !isDiscoverablePath(path, discoverablePathSet)) continue;
       addEntry({
         path,
         lastmod: toIsoDate(seoRow.updated_at),
