@@ -19,9 +19,19 @@ interface ContactSectionProps {
   compact?: boolean;
   sourcePage?: string;
   showSectionHeading?: boolean;
+  hideMeta?: boolean;
+  sectionClassName?: string;
+  embedded?: boolean;
 }
 
-const ContactSection = ({ compact, sourcePage = "homepage", showSectionHeading = true }: ContactSectionProps) => {
+const ContactSection = ({
+  compact,
+  sourcePage = "homepage",
+  showSectionHeading = true,
+  hideMeta = false,
+  sectionClassName = "",
+  embedded = false,
+}: ContactSectionProps) => {
   const [form, setForm] = useState({ name: "", email: "", phone: "", course: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -138,8 +148,74 @@ const ContactSection = ({ compact, sourcePage = "homepage", showSectionHeading =
     );
   }
 
+  const content = (
+    <div className="max-w-5xl mx-auto space-y-8 sm:space-y-10">
+      <motion.form
+        onSubmit={handleSubmit}
+        className="bg-card rounded-lg border p-4 sm:p-7 space-y-4 max-w-2xl mx-auto"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        <div>
+          <Label htmlFor="c-name" className="text-foreground text-sm">Full Name</Label>
+          <Input id="c-name" placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} className="mt-1 h-11 rounded-lg" />
+        </div>
+        <div>
+          <Label htmlFor="c-email" className="text-foreground text-sm">Email</Label>
+          <Input id="c-email" type="email" placeholder="your@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={255} className="mt-1 h-11 rounded-lg" />
+        </div>
+        <div>
+          <Label htmlFor="c-phone" className="text-foreground text-sm">Phone</Label>
+          <Input id="c-phone" type="tel" placeholder="+91 XXXXX XXXXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} maxLength={15} className="mt-1 h-11 rounded-lg" />
+        </div>
+        <div>
+          <Label htmlFor="c-course" className="text-foreground text-sm">Course Interest</Label>
+          <select id="c-course" value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })} className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-ring">
+            <option value="">Select a course</option>
+            {courseOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-semibold h-11 rounded-lg">
+          <Send className="mr-2 h-4 w-4" /> {submitting ? "Sending..." : "Send Enquiry"}
+        </Button>
+      </motion.form>
+
+      {!hideMeta ? (
+        <motion.div
+          className="max-w-4xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground text-center mb-6">Our Location & Contact</h3>
+          <div className="grid sm:grid-cols-3 gap-4 md:gap-6">
+            {[
+              { icon: MapPin, title: "Our Office", desc: officeAddress },
+              { icon: Phone, title: "Call Us", desc: phoneNumber },
+              { icon: Mail, title: "Email Us", desc: emailAddress },
+            ].map((item) => (
+              <div key={item.title} className="bg-card border rounded-lg p-5 flex items-start gap-3">
+                <div className="w-11 h-11 rounded-lg bg-accent flex items-center justify-center shrink-0">
+                  <item.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-foreground text-sm">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <SocialLinks placement="contact" variant="contact" className="justify-center pt-6" />
+        </motion.div>
+      ) : null}
+    </div>
+  );
+
+  if (embedded) return content;
+
   return (
-    <section id="contact" className="py-16 md:py-24">
+    <section id="contact" className={`py-16 md:py-24 ${sectionClassName}`.trim()}>
       <div className="container">
         {showSectionHeading ? (
           <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -147,66 +223,7 @@ const ContactSection = ({ compact, sourcePage = "homepage", showSectionHeading =
             <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-foreground">Contact Us</h2>
           </motion.div>
         ) : null}
-
-        <div className="max-w-5xl mx-auto space-y-10">
-          <motion.form
-            onSubmit={handleSubmit}
-            className="bg-card rounded-lg border p-7 space-y-4 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div>
-              <Label htmlFor="c-name" className="text-foreground text-sm">Full Name</Label>
-              <Input id="c-name" placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={100} className="mt-1 h-11 rounded-lg" />
-            </div>
-            <div>
-              <Label htmlFor="c-email" className="text-foreground text-sm">Email</Label>
-              <Input id="c-email" type="email" placeholder="your@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={255} className="mt-1 h-11 rounded-lg" />
-            </div>
-            <div>
-              <Label htmlFor="c-phone" className="text-foreground text-sm">Phone</Label>
-              <Input id="c-phone" type="tel" placeholder="+91 XXXXX XXXXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} maxLength={15} className="mt-1 h-11 rounded-lg" />
-            </div>
-            <div>
-              <Label htmlFor="c-course" className="text-foreground text-sm">Course Interest</Label>
-              <select id="c-course" value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })} className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-ring">
-                <option value="">Select a course</option>
-                {courseOptions.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <Button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-semibold h-11 rounded-lg">
-              <Send className="mr-2 h-4 w-4" /> {submitting ? "Sending..." : "Send Enquiry"}
-            </Button>
-          </motion.form>
-
-          <motion.div
-            className="max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h3 className="text-xl md:text-2xl font-heading font-bold text-foreground text-center mb-6">Our Location & Contact</h3>
-            <div className="grid sm:grid-cols-3 gap-4 md:gap-6">
-              {[
-                { icon: MapPin, title: "Our Office", desc: officeAddress },
-                { icon: Phone, title: "Call Us", desc: phoneNumber },
-                { icon: Mail, title: "Email Us", desc: emailAddress },
-              ].map((item) => (
-                <div key={item.title} className="bg-card border rounded-lg p-5 flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                    <item.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-heading font-bold text-foreground text-sm">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <SocialLinks placement="contact" variant="contact" className="justify-center pt-6" />
-          </motion.div>
-        </div>
+        {content}
       </div>
     </section>
   );
