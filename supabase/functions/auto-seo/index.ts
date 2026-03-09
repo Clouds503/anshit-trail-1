@@ -542,8 +542,10 @@ function buildHighEnd3DPrompt(basePrompt: string, context: string): string {
     basePrompt,
     `Context: ${context}.`,
     "Style: cinematic premium 3D, physically based rendering, strong depth layering, clean composition, realistic materials, and polished lighting.",
+    "This must be a pure visual scene, never a website screenshot, dashboard UI, poster, banner, or app mockup.",
     "Do not render words, letters, typography, banners, posters, UI text, or glyphs.",
     "No logos, no watermarks, no non-English scripts, no random characters.",
+    "If screens or boards are present, they must be blank or abstract with zero readable characters.",
   ].join(" ");
 }
 
@@ -1533,7 +1535,72 @@ async function runTechnicalSeoAudit(
 }
 
 function shouldEnrichPage(page: PageCandidate): boolean {
-  return !page.path.startsWith("/blog/") && !page.path.startsWith("/course/");
+  return page.page_type !== "other";
+}
+
+function blocksToPlainText(blocks: Array<Record<string, unknown>>, maxLength = 4000): string {
+  const lines: string[] = [];
+  for (const block of blocks) {
+    const type = `${block.type || ""}`.toLowerCase();
+    if (type === "heading" || type === "subheading" || type === "paragraph") {
+      const text = trimToLength(`${block.text || ""}`, 1200);
+      if (text) lines.push(text);
+      continue;
+    }
+    if (type === "list") {
+      const items = Array.isArray(block.items)
+        ? block.items.map((item) => trimToLength(`${item || ""}`, 220)).filter(Boolean)
+        : [];
+      if (items.length) lines.push(items.join(". "));
+    }
+  }
+  return trimToLength(lines.join(" ").replace(/\s+/g, " ").trim(), maxLength);
+}
+
+function blocksToMarkdown(blocks: Array<Record<string, unknown>>): string {
+  const parts: string[] = [];
+
+  for (const block of blocks) {
+    const type = `${block.type || ""}`.toLowerCase();
+    if (type === "heading") {
+      const text = trimToLength(`${block.text || ""}`, 180);
+      if (text) parts.push(`## ${text}`);
+      continue;
+    }
+    if (type === "subheading") {
+      const text = trimToLength(`${block.text || ""}`, 180);
+      if (text) parts.push(`### ${text}`);
+      continue;
+    }
+    if (type === "paragraph") {
+      const text = trimToLength(`${block.text || ""}`, 1500);
+      if (text) parts.push(text);
+      continue;
+    }
+    if (type === "list") {
+      const items = Array.isArray(block.items)
+        ? block.items.map((item) => trimToLength(`${item || ""}`, 220)).filter(Boolean).slice(0, 12)
+        : [];
+      if (items.length) {
+        parts.push(items.map((item) => `- ${item}`).join("\n"));
+      }
+      continue;
+    }
+    if (type === "image") {
+      const imageUrl = `${block.url || ""}`.trim();
+      if (!imageUrl) continue;
+      const alt = trimToLength(`${block.alt || "Section visual"}`, 140);
+      parts.push(`![${alt}](${imageUrl})`);
+    }
+  }
+
+  return parts.join("\n\n").trim();
+}
+
+function buildShortDescription(source: string, fallback: string): string {
+  const candidate = trimToLength(`${source || ""}`.replace(/\s+/g, " ").trim(), 120);
+  if (candidate) return candidate;
+  return trimToLength(`${fallback || ""}`.replace(/\s+/g, " ").trim(), 120);
 }
 
 async function enqueueIndexingJobs(
@@ -1703,7 +1770,7 @@ serve(async (req) => {
       supabase.from("page_content").select("page_slug,page_title,hero_subtitle,content,updated_at,is_active"),
       supabase
         .from("programs")
-        .select("id,slug,title,short_description,description,duration,level,price,updated_at")
+        .select("id,slug,title,short_description,description,image_url,duration,level,price,updated_at")
         .eq("is_active", true),
       supabase
         .from("blogs")
@@ -1767,6 +1834,8 @@ serve(async (req) => {
 
     const programs = programRes.data || [];
     const blogs = blogRes.data || [];
+    const programById = new Map(programs.map((program: any) => [`${program.id}`, program]));
+    const blogById = new Map(blogs.map((blog: any) => [`${blog.id}`, blog]));
     const blogPerformanceByPath = buildPerformanceMap(blogs.map((b: any) => ({ id: b.id, slug: b.slug })), blogMetricsRes.data as any);
 
     const programPages: PageCandidate[] = programs.map((program: any) => ({
@@ -1814,6 +1883,7 @@ serve(async (req) => {
           processed_count: 0,
           skipped_unchanged: 0,
           enriched_count: 0,
+          enriched_paths_count: 0,
           warnings: singlePage ? [`single_page_not_found:${singlePage}`] : [],
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -1844,7 +1914,7 @@ serve(async (req) => {
       pagesToProcess.sort((a, b) => (b.performance?.weak_score || 0) - (a.performance?.weak_score || 0));
     }
 
-    if (!pagesToProcess.length) {
+    if (!pagesToProcess.length && !enrichContent) {
       const technicalAudit = await runTechnicalSeoAudit(
         siteUrl,
         homePageContent,
@@ -1870,6 +1940,7 @@ serve(async (req) => {
           processed_count: 0,
           skipped_unchanged: skippedUnchanged,
           enriched_count: 0,
+          enriched_paths_count: 0,
           level,
           changed_only: changedOnly,
           weak_pages_prioritized: optimizeWeakFirst,
@@ -2008,15 +2079,35 @@ serve(async (req) => {
     }
 
     let enrichedCount = 0;
+    const enrichedPaths: string[] = [];
     if (enrichContent) {
-      const enrichTargets = (singlePage ? pagesToProcess : pagesToProcess.slice(0, 3)).filter(shouldEnrichPage);
+      const enrichTargets = targetPages.filter(shouldEnrichPage);
       for (const page of enrichTargets) {
         const pageSlug = stripSlash(page.path);
-        const { data: existingPage } = await supabase
-          .from("page_content")
-          .select("id,page_title,hero_subtitle,hero_image_url,content,is_active")
-          .eq("page_slug", pageSlug)
-          .maybeSingle();
+        const sourceId = `${page.source_id || ""}`.trim();
+        const existingProgram = page.page_type === "program_detail" && sourceId ? programById.get(sourceId) : null;
+        const existingBlog = page.page_type === "blog_post" && sourceId ? blogById.get(sourceId) : null;
+        let existingPage: any = null;
+
+        if ((page.page_type === "program_detail" || page.page_type === "blog_post") && !sourceId) {
+          warnings.push(`content_enrich_skipped:${page.path}:missing_source_id`);
+          continue;
+        }
+
+        if (!existingProgram && !existingBlog) {
+          const pageRow = await supabase
+            .from("page_content")
+            .select("id,page_title,hero_subtitle,hero_image_url,content,is_active")
+            .eq("page_slug", pageSlug)
+            .maybeSingle();
+          existingPage = pageRow.data;
+        }
+
+        const existingContentSummary = existingProgram
+          ? `${existingProgram.short_description || ""} ${existingProgram.description || ""}`
+          : existingBlog
+            ? `${existingBlog.excerpt || ""} ${existingBlog.content || ""}`
+            : toShortContext(existingPage?.content || page.content);
 
         const enrichPrompt = `Enrich website content for this page.
 
@@ -2024,7 +2115,7 @@ Page path: ${page.path}
 Page slug: ${pageSlug}
 Page name: ${page.name}
 Section hints: ${(page.sub_sections || []).join(", ")}
-Existing content summary: ${toShortContext(existingPage?.content || page.content)}
+Existing content summary: ${toShortContext(existingContentSummary, 1200)}
 
 Return one JSON object with EXACT keys:
 {
@@ -2059,13 +2150,16 @@ Rules:
           continue;
         }
 
-        if (!enriched || !Array.isArray(enriched.content)) continue;
+        if (!enriched || !Array.isArray(enriched.content)) {
+          warnings.push(`content_enrich_skipped:${page.path}:invalid_enriched_content`);
+          continue;
+        }
 
         const heroPrompt = buildHighEnd3DPrompt(
           enriched.hero_image_prompt || `High-end 3D hero image for ${enriched.page_title || page.name}`,
           `Page: ${enriched.page_title || page.name}. Slug: ${pageSlug}.`,
         );
-        let heroImageUrl = `${existingPage?.hero_image_url || ""}`.trim();
+        let heroImageUrl = `${existingProgram?.image_url || existingBlog?.image_url || existingPage?.hero_image_url || ""}`.trim();
         try {
           heroImageUrl = await generateViaGenerateImageFunction(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
             prompt: heroPrompt,
@@ -2087,7 +2181,7 @@ Rules:
           warnings.push(`hero_image_failed:${page.path}:${err?.message || "unknown_error"}`);
         }
 
-        const cleanBlocks: any[] = [];
+        const cleanBlocks: Array<Record<string, unknown>> = [];
         for (const block of enriched.content as EnrichedBlock[]) {
           if (!block || typeof block !== "object") continue;
           if (block.type === "heading" || block.type === "subheading" || block.type === "paragraph") {
@@ -2138,6 +2232,63 @@ Rules:
           }
         }
 
+        if (page.page_type === "program_detail" && existingProgram) {
+          const plainText = blocksToPlainText(cleanBlocks, 3500);
+          const finalDescription = plainText || trimToLength(`${existingProgram.description || ""}`, 3500);
+          const finalShortDescription = buildShortDescription(
+            `${enriched.hero_subtitle || ""}`,
+            finalDescription || `${existingProgram.short_description || existingProgram.title || ""}`,
+          );
+          const { error: programUpdateError } = await supabase
+            .from("programs")
+            .update({
+              description: finalDescription || null,
+              short_description: finalShortDescription || null,
+              image_url: heroImageUrl || existingProgram.image_url || null,
+            })
+            .eq("id", sourceId);
+
+          if (programUpdateError) {
+            warnings.push(`content_upsert_failed:${page.path}:${programUpdateError.message}`);
+            continue;
+          }
+
+          enrichedCount += 1;
+          enrichedPaths.push(page.path);
+          continue;
+        }
+
+        if (page.page_type === "blog_post" && existingBlog) {
+          const markdownContent = blocksToMarkdown(cleanBlocks);
+          const excerptFromBlocks = blocksToPlainText(cleanBlocks, 220);
+          const finalExcerpt = buildShortDescription(excerptFromBlocks, `${existingBlog.excerpt || ""}`);
+          const blogUpdatePayload: Record<string, unknown> = {
+            excerpt: finalExcerpt || null,
+            image_url: heroImageUrl || existingBlog.image_url || null,
+          };
+          if (markdownContent) {
+            blogUpdatePayload.content = markdownContent;
+          }
+          const { error: blogUpdateError } = await supabase
+            .from("blogs")
+            .update(blogUpdatePayload)
+            .eq("id", sourceId);
+
+          if (blogUpdateError) {
+            warnings.push(`content_upsert_failed:${page.path}:${blogUpdateError.message}`);
+            continue;
+          }
+
+          enrichedCount += 1;
+          enrichedPaths.push(page.path);
+          continue;
+        }
+
+        const staticContent =
+          cleanBlocks.length > 0
+            ? cleanBlocks
+            : (Array.isArray(existingPage?.content) ? existingPage.content : []);
+
         const { error: contentUpsertError } = await supabase.from("page_content").upsert(
           {
             id: existingPage?.id,
@@ -2145,7 +2296,7 @@ Rules:
             page_title: trimToLength(`${enriched.page_title || existingPage?.page_title || page.name}`, 140),
             hero_subtitle: trimToLength(`${enriched.hero_subtitle || existingPage?.hero_subtitle || ""}`, 220),
             hero_image_url: heroImageUrl || existingPage?.hero_image_url || null,
-            content: cleanBlocks,
+            content: staticContent,
             is_active: existingPage?.is_active ?? true,
           },
           { onConflict: "page_slug" },
@@ -2157,6 +2308,7 @@ Rules:
         }
 
         enrichedCount += 1;
+        enrichedPaths.push(page.path);
       }
     }
 
@@ -2165,8 +2317,9 @@ Rules:
     let queueIndexed = 0;
     let queueFailed = 0;
 
-    if (triggerIndexing && changedPaths.length > 0) {
-      const queueResult = await enqueueIndexingJobs(supabase, changedPaths, siteUrl);
+    const indexingPaths = [...new Set([...changedPaths, ...enrichedPaths])];
+    if (triggerIndexing && indexingPaths.length > 0) {
+      const queueResult = await enqueueIndexingJobs(supabase, indexingPaths, siteUrl);
       queueEnqueued = queueResult.enqueued;
       if (queueResult.warning) warnings.push(queueResult.warning);
 
@@ -2215,6 +2368,8 @@ Rules:
         skipped_unchanged: skippedUnchanged,
         changed_paths_count: changedPaths.length,
         enriched_count: enrichedCount,
+        enriched_paths_count: enrichedPaths.length,
+        enriched_paths: enrichedPaths,
         quality: {
           avg_score: avgQualityScore,
           pages_scored: qualityByPath.length,

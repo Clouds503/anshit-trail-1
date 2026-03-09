@@ -35,6 +35,34 @@ function parseSettingValue(value: any): string {
   }
 }
 
+function isPollinationsUrl(rawUrl: string): boolean {
+  try {
+    const parsed = new URL(rawUrl);
+    return parsed.hostname.toLowerCase().endsWith("pollinations.ai");
+  } catch {
+    return false;
+  }
+}
+
+export async function isImageUrlHealthy(url: string | null | undefined): Promise<boolean> {
+  const value = `${url || ""}`.trim();
+  if (!value) return false;
+
+  // Legacy pollinations URLs often require server-side auth and fail from browser HEAD checks.
+  // Treat them as unhealthy so admin tools regenerate and migrate to Cloudinary.
+  if (isPollinationsUrl(value)) return false;
+
+  try {
+    const res = await fetch(value, {
+      method: "HEAD",
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function getCloudinaryConfig(): Promise<CloudinaryConfig> {
   const { data, error } = await (supabase as any)
     .from("site_settings")
@@ -100,6 +128,9 @@ export async function generateImageFromPrompt(prompt: string, options: GenerateI
       lastError = err;
       console.error("generate-image attempt", attempt + 1, "error:", err);
       const msg = String(err?.message || err);
+      if (Number(err?.status) === 429) {
+        throw new Error("Image rate limit reached. Wait about 60 seconds and retry.");
+      }
       if (isNetworkTransportError(msg)) {
         if (attempt < maxNetworkAttempts - 1) {
           await new Promise((res) => setTimeout(res, 400 * (attempt + 1)));
@@ -131,12 +162,13 @@ export function buildMasterImagePrompt(options: PromptContextOptions): string {
     .slice(0, 600);
 
   return [
-    `Create a premium cinematic 3D website image for: ${options.subject}.`,
+    `Create a premium cinematic 3D hero scene for: ${options.subject}.`,
     detailText ? `Context: ${detailText}.` : "",
-    "Use realistic materials, depth layering, and clean visual hierarchy.",
-    "No logos, no watermarks, no random glyphs, and no non-English text.",
-    "No readable text of any kind: no words, letters, numbers, captions, or UI labels.",
-    "Avoid screens, posters, documents, and signage.",
+    "Use realistic materials, depth layering, and one clear visual focal point.",
+    "This must be an environment/scene artwork, never a website screenshot, app UI, dashboard, menu, or mockup.",
+    "No logos, no watermarks, no random glyphs, and no non-English scripts.",
+    "No readable text of any kind: no words, letters, numbers, captions, signs, labels, buttons, or nav links.",
+    "Any boards or displays must be blank or heavily blurred with zero readable characters.",
   ]
     .filter(Boolean)
     .join(" ");

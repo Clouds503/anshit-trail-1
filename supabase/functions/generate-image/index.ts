@@ -13,9 +13,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const RATE_LIMITS = {
-  rpm: 5,
-  rpd: 20,
+type RequestLimits = {
+  global: { rpm: number; rpd: number };
+  caller: { rpm: number; rpd: number };
 };
 
 const WINDOW_SECONDS = {
@@ -139,15 +139,31 @@ function compactPrompt(value: string, maxLength = 950): string {
   return value.replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+function sanitizeUserPrompt(userPrompt: string): string {
+  return compactPrompt(
+    userPrompt
+      .replace(
+        /\b(website|web site|webpage|landing page|homepage|hero section|ui|ux|dashboard|app screen|menu|navbar|button|cta|poster|flyer|brochure|infographic|typography|caption|title text|headline|logo)\b/gi,
+        "scene",
+      )
+      .replace(/\s+/g, " "),
+    700,
+  );
+}
+
 function buildLowCostImagePrompt(userPrompt: string, contextLine: string): string {
+  const sanitizedPrompt = sanitizeUserPrompt(userPrompt);
   return compactPrompt(
     [
-      userPrompt,
+      sanitizedPrompt,
       contextLine,
-      "Create a premium cinematic 3D visual with realistic materials, clean depth, and one clear focal subject.",
-      "No text, no letters, no numbers, no logos, no labels, no watermarks, no UI text.",
-      "Avoid screens, dashboards, posters, signs, and documents.",
-      "English visual context only.",
+      "Create a premium cinematic 3D visual scene with realistic materials, clean depth, and one clear focal subject.",
+      "This must be a visual scene, not a website screenshot, not an app UI, and not a poster layout.",
+      "No text, no letters, no numbers, no logos, no labels, no watermarks, and no UI copy.",
+      "No readable language of any kind, including non-English scripts or random glyphs.",
+      "If boards or screens exist, keep them blank or abstract with zero readable characters.",
+      "Avoid dashboards, signs, documents, code snippets, and typographic elements.",
+      "English-only visual context; do not render written language in the image.",
     ]
       .filter(Boolean)
       .join(" "),
@@ -166,14 +182,43 @@ function normalizePollinationsModel(model: unknown): string {
   return raw;
 }
 
-async function enforceRequestBudgets(supabase: any, callerKey: string): Promise<void> {
+function readPositiveIntEnv(name: string, fallback: number, min = 1, max = 1_000_000): number {
+  const raw = `${Deno.env.get(name) || ""}`.trim();
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(parsed)));
+}
+
+function resolveRequestLimits(callerType: "service" | "user" | "public"): RequestLimits {
+  const globalRpm = readPositiveIntEnv("GENERATE_IMAGE_GLOBAL_RPM", 60, 1, 6000);
+  const globalRpd = readPositiveIntEnv("GENERATE_IMAGE_GLOBAL_RPD", 3000, 1, 1_000_000);
+
+  const callerRpmDefault = callerType === "service" ? 120 : 30;
+  const callerRpdDefault = callerType === "service" ? 8000 : 1000;
+  const callerRpm = readPositiveIntEnv("GENERATE_IMAGE_CALLER_RPM", callerRpmDefault, 1, 6000);
+  const callerRpd = readPositiveIntEnv("GENERATE_IMAGE_CALLER_RPD", callerRpdDefault, 1, 1_000_000);
+
+  return {
+    global: { rpm: globalRpm, rpd: globalRpd },
+    caller: { rpm: callerRpm, rpd: callerRpd },
+  };
+}
+
+async function enforceRequestBudgets(
+  supabase: any,
+  callerKey: string,
+  callerType: "service" | "user" | "public",
+): Promise<RequestLimits> {
+  const limits = resolveRequestLimits(callerType);
   const globalPrefix = "generate-image:global";
   const callerPrefix = `generate-image:${callerKey}`;
 
-  await enforceRateLimitOrThrow(supabase, `${globalPrefix}:rpm`, RATE_LIMITS.rpm, WINDOW_SECONDS.rpm);
-  await enforceRateLimitOrThrow(supabase, `${globalPrefix}:rpd`, RATE_LIMITS.rpd, WINDOW_SECONDS.rpd);
-  await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpm`, RATE_LIMITS.rpm, WINDOW_SECONDS.rpm);
-  await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpd`, RATE_LIMITS.rpd, WINDOW_SECONDS.rpd);
+  await enforceRateLimitOrThrow(supabase, `${globalPrefix}:rpm`, limits.global.rpm, WINDOW_SECONDS.rpm);
+  await enforceRateLimitOrThrow(supabase, `${globalPrefix}:rpd`, limits.global.rpd, WINDOW_SECONDS.rpd);
+  await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpm`, limits.caller.rpm, WINDOW_SECONDS.rpm);
+  await enforceRateLimitOrThrow(supabase, `${callerPrefix}:rpd`, limits.caller.rpd, WINDOW_SECONDS.rpd);
+
+  return limits;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
@@ -226,7 +271,7 @@ serve(async (req) => {
     const callerIdentity = resolveCallerIdentity(req);
     const callerKey = callerIdentity.key;
 
-    await enforceRequestBudgets(supabase, callerKey);
+    const requestLimits = await enforceRequestBudgets(supabase, callerKey, callerIdentity.type);
 
     const promptContext = extractPromptContext((body || {}) as Record<string, unknown>);
     const inferredComponents = inferDomainComponents(promptContext);
@@ -306,9 +351,12 @@ serve(async (req) => {
         best_of_effective: bestOf,
         limiter: {
           caller_key: callerKey,
+          caller_type: callerIdentity.type,
           limits: {
-            rpm: RATE_LIMITS.rpm,
-            rpd: RATE_LIMITS.rpd,
+            global_rpm: requestLimits.global.rpm,
+            global_rpd: requestLimits.global.rpd,
+            caller_rpm: requestLimits.caller.rpm,
+            caller_rpd: requestLimits.caller.rpd,
           },
           window_seconds: WINDOW_SECONDS,
         },

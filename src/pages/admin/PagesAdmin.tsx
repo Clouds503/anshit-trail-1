@@ -5,7 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2, Save, Upload, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
-import { buildMasterImagePrompt, generateImageFromPrompt, uploadImageFileToCloudinary } from "@/lib/admin-image";
+import {
+  buildMasterImagePrompt,
+  generateImageFromPrompt,
+  isImageUrlHealthy,
+  uploadImageFileToCloudinary,
+} from "@/lib/admin-image";
 import { invokeAdminFunction } from "@/lib/edge-functions";
 
 interface ContentBlock {
@@ -104,17 +109,7 @@ const PagesAdmin = () => {
         let needsUpdate = false;
         const updates: any = {};
 
-        const checkUrl = async (url: string | null | undefined) => {
-          if (!url) return false;
-          try {
-            const res = await fetch(url, { method: "HEAD" });
-            return res.ok;
-          } catch {
-            return false;
-          }
-        };
-
-        if (!(await checkUrl(p.hero_image_url))) {
+        if (!(await isImageUrlHealthy(p.hero_image_url))) {
           broken++;
           const prompt = buildMasterImagePrompt({
             subject: `Hero image for ${p.page_title}`,
@@ -130,7 +125,7 @@ const PagesAdmin = () => {
           for (let i = 0; i < newContent.length; i++) {
             const block = newContent[i] as ContentBlock;
             if (block.type === "image") {
-              const good = await checkUrl(block.url);
+              const good = await isImageUrlHealthy(block.url);
               if (!good) {
                 broken++;
                 const prompt = buildMasterImagePrompt({
@@ -185,7 +180,13 @@ const PagesAdmin = () => {
     setGenerating(true);
     try {
       const data = await invokeAdminFunction<any>("auto-seo", {
-        body: { level: "master", single_page: selected.page_slug, enrich_content: true },
+        body: {
+          level: "master",
+          single_page: selected.page_slug,
+          enrich_content: true,
+          changed_only: false,
+          optimize_weak_first: false,
+        },
       });
       const refreshed = await loadPages();
       const nextSelected = refreshed.find((p) => p.page_slug === selected.page_slug);

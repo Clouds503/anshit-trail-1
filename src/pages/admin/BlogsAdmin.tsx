@@ -17,7 +17,7 @@ const fields: CrudField[] = [
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { buildMasterImagePrompt, generateImageFromPrompt } from "@/lib/admin-image";
+import { buildMasterImagePrompt, generateImageFromPrompt, isImageUrlHealthy } from "@/lib/admin-image";
 import { toast } from "sonner";
 
 const BlogsAdmin = () => {
@@ -36,14 +36,7 @@ const BlogsAdmin = () => {
       for (const b of list) {
         let bad = false;
         if (!b.image_url) bad = true;
-        else {
-          try {
-            const res = await fetch(b.image_url, { method: "HEAD" });
-            if (!res.ok) bad = true;
-          } catch {
-            bad = true;
-          }
-        }
+        else if (!(await isImageUrlHealthy(b.image_url))) bad = true;
         if (bad) broken.push(b);
       }
       setTotalBroken(broken.length);

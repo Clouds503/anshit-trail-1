@@ -86,6 +86,7 @@ function normalizePath(raw: unknown): string | null {
   value = value.length > 1 ? value.replace(/\/+$/, "") : value;
   if (value === "/home") value = "/";
   if (value.startsWith("/admin")) return null;
+  if (value.startsWith("/functions")) return null;
   return value || "/";
 }
 

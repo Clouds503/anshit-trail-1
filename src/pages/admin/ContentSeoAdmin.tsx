@@ -60,6 +60,8 @@ const ContentSeoAdmin = () => {
           level,
           single_page: target,
           enrich_content: true,
+          changed_only: false,
+          optimize_weak_first: false,
         },
       });
       toast.success(`Content SEO completed. Updated ${data?.enriched_count || 0} page(s).`);

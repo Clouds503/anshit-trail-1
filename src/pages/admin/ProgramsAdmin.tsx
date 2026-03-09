@@ -8,7 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, Sparkles, Upload, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { buildMasterImagePrompt, generateImageFromPrompt, uploadImageFileToCloudinary } from "@/lib/admin-image";
+import {
+  buildMasterImagePrompt,
+  generateImageFromPrompt,
+  isImageUrlHealthy,
+  uploadImageFileToCloudinary,
+} from "@/lib/admin-image";
 import { invokeAdminFunction } from "@/lib/edge-functions";
 
 interface Program {
@@ -317,11 +322,7 @@ const ProgramsAdmin = () => {
           broken.push(p);
           continue;
         }
-        try {
-          const res = await fetch(p.image_url, { method: "HEAD" });
-          if (!res.ok) broken.push(p);
-        } catch (e) {
-          // network or CORS error — treat as broken so we can regenerate
+        if (!(await isImageUrlHealthy(p.image_url))) {
           broken.push(p);
         }
       }

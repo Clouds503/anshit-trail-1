@@ -133,12 +133,32 @@ const SeoAdmin = () => {
           max_indexing_per_run: indexingLimit,
         },
       });
+      const levelLabel = level ? `${level[0].toUpperCase()}${level.slice(1)}` : "SEO";
+      const count = Number.isFinite(Number(data?.count)) ? Number(data.count) : 0;
+      const processedCount = Number.isFinite(Number(data?.processed_count)) ? Number(data.processed_count) : 0;
+      const skippedUnchanged = Number.isFinite(Number(data?.skipped_unchanged)) ? Number(data.skipped_unchanged) : 0;
       const auditScore = Number(data?.technical_audit?.score);
-      const auditFails = Number(data?.technical_audit?.summary?.fail || 0);
-      const auditSuffix = Number.isFinite(auditScore)
-        ? ` Technical audit: ${auditScore}/100${auditFails > 0 ? ` (${auditFails} fail)` : ""}.`
-        : "";
-      toast.success(`${level} SEO generated for ${data?.count || "all"} pages!${auditSuffix}`);
+      const auditScoreSuffix = Number.isFinite(auditScore) ? ` Technical audit: ${Math.round(auditScore)}/100.` : "";
+
+      if (count === 0) {
+        toast.success(
+          `${levelLabel} SEO completed: 0 updated (up-to-date). Processed ${processedCount}, skipped unchanged ${skippedUnchanged}.${auditScoreSuffix}`,
+        );
+      } else {
+        toast.success(
+          `${levelLabel} SEO completed: updated ${count} page(s). Processed ${processedCount}, skipped unchanged ${skippedUnchanged}.${auditScoreSuffix}`,
+        );
+      }
+
+      const findings = Array.isArray(data?.technical_audit?.findings) ? data.technical_audit.findings : [];
+      const failedFindings = findings.filter((finding: any) => `${finding?.status || ""}`.toLowerCase() === "fail");
+      if (failedFindings.length > 0) {
+        const details = failedFindings
+          .slice(0, 2)
+          .map((finding: any) => `${finding?.id || finding?.category || "audit"}: ${finding?.message || "failed check"}`)
+          .join(" | ");
+        toast.warning(`Technical audit warning: ${failedFindings.length} failure(s). ${details}`);
+      }
       fetchData();
     } catch (e: any) {
       toast.error(e.message || "Failed to generate SEO");
