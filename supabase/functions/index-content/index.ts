@@ -140,7 +140,7 @@ serve(async (req) => {
     const siteUrl =
       normalizeBaseUrl(
         readSettingString(map, ["site_url", "site_base_url", "website_url", "domain_url"]) ||
-        getEnv("SITE_URL") ||
+        Deno.env.get("SITE_URL") ||
         "",
       ) || "https://cloudstrail.com";
 

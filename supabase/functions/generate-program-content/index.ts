@@ -258,6 +258,8 @@ Output JSON only.`;
       prompt: edgePrompt,
       width: 800,
       height: 450,
+      provider: "pollinations",
+      model: "flux",
       upload_to_cloudinary: true,
       best_of: 1,
       title,
