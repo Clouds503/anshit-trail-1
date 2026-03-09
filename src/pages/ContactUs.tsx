@@ -4,6 +4,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import ContactSection from "@/components/ContactSection";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import SocialLinks from "@/components/SocialLinks";
+import PageSeoContent from "@/components/PageSeoContent";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock3, Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -185,6 +186,17 @@ const ContactUs = () => {
           </motion.div>
         </div>
       </section>
+
+      <PageSeoContent
+        slug="contact"
+        className="py-5 md:py-7"
+        heroTitle={pageTitle}
+        excludedHeadings={["contact us", "get in touch", "quick enquiry"]}
+        minUsefulWords={520}
+        allowedTypes={["heading", "subheading", "paragraph"]}
+        segmentIndex={0}
+        maxBlocksInSegment={3}
+      />
 
       <section className="pb-10 md:pb-12">
         <div className="container max-w-5xl">

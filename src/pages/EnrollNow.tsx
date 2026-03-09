@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import PublicLongformContent from "@/components/PublicLongformContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -410,6 +411,8 @@ const EnrollNow = () => {
           </motion.div>
         </div>
       </section>
+
+      <PublicLongformContent variant="enroll" />
 
       <Footer />
       <WhatsAppButton />

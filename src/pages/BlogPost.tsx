@@ -95,7 +95,7 @@ const renderMarkdownContent = (content: string) => {
             );
           }
           return (
-            <h3 key={idx} className="mt-8 text-xl font-heading font-black leading-tight text-foreground sm:text-2xl">
+            <h3 key={idx} className="mt-8 text-xs font-heading font-bold uppercase tracking-[0.18em] text-primary sm:text-sm">
               {block.text}
             </h3>
           );
@@ -157,8 +157,8 @@ const renderStyledBlocks = (blocks: TypographyBlock[]) => (
           <h3
             key={idx}
             className={cn(
-              "mt-8 font-heading font-black leading-tight text-foreground",
-              textClasses(block.style, "xl"),
+              "mt-8 font-heading font-bold uppercase tracking-[0.18em] text-primary",
+              textClasses(block.style, "sm"),
             )}
           >
             {block.text}

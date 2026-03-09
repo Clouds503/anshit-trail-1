@@ -312,7 +312,7 @@ const DynamicPage = ({ slug, beforeFooter }: DynamicPageProps) => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.3, delay: Math.min(i * 0.02, 0.2) }}
-                    className={cn("font-heading text-foreground mt-2 font-extrabold tracking-tight", textClasses(block.style, "3xl"))}
+                    className={cn("mt-2 font-heading font-black tracking-tight text-foreground", textClasses(block.style, "3xl"))}
                   >
                     {block.text}
                   </motion.h2>
@@ -327,7 +327,10 @@ const DynamicPage = ({ slug, beforeFooter }: DynamicPageProps) => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.28, delay: Math.min(i * 0.02, 0.2) }}
-                    className={cn("font-heading text-foreground mt-1 font-bold tracking-tight", textClasses(block.style, "xl"))}
+                    className={cn(
+                      "mt-1 font-heading font-bold uppercase tracking-[0.18em] text-primary",
+                      textClasses(block.style, "sm"),
+                    )}
                   >
                     {block.text}
                   </motion.h3>
@@ -342,7 +345,7 @@ const DynamicPage = ({ slug, beforeFooter }: DynamicPageProps) => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.28, delay: Math.min(i * 0.02, 0.2) }}
-                    className={cn("text-muted-foreground leading-7 sm:leading-8", textClasses(block.style, "base"))}
+                    className={cn("text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8", textClasses(block.style, "base"))}
                   >
                     {block.text}
                   </motion.p>

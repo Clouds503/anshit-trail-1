@@ -410,7 +410,7 @@ const AboutUs = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.35, delay: Math.min(index * 0.02, 0.2) }}
-                    className={`font-heading font-extrabold tracking-tight text-foreground ${size}`}
+                    className={`font-heading font-black tracking-tight text-foreground ${size}`}
                   >
                     {block.text}
                   </motion.h2>
@@ -418,7 +418,7 @@ const AboutUs = () => {
               }
 
               if (block.type === "subheading") {
-                const size = block.style?.size ? sizeClassMap[block.style.size] : "text-lg sm:text-xl";
+                const size = block.style?.size ? sizeClassMap[block.style.size] : "text-xs sm:text-sm";
                 return (
                   <motion.h3
                     key={`${block.text}-${index}`}
@@ -426,7 +426,7 @@ const AboutUs = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.32, delay: Math.min(index * 0.02, 0.2) }}
-                    className={`font-heading font-bold tracking-tight text-foreground ${size}`}
+                    className={`font-heading font-bold uppercase tracking-[0.18em] text-primary ${size}`}
                   >
                     {block.text}
                   </motion.h3>

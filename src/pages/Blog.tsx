@@ -14,6 +14,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import PublicLongformContent from "@/components/PublicLongformContent";
 import { blogPosts } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -458,21 +459,7 @@ const Blog = () => {
         </div>
       </section>
 
-      <section className="pb-12 md:pb-16">
-        <div className="container max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="rounded-2xl border bg-gradient-to-r from-accent/25 via-background to-accent/20 p-4 sm:p-7"
-          >
-            <p className="text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-              Beyond blogs and course pages, this website is designed as a complete learning ecosystem where prospective students can explore programs, track industry trends, evaluate role-specific paths, and confidently plan their next career move with trusted, practical guidance.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <PublicLongformContent variant="blog" />
 
       <Footer />
       <WhatsAppButton />
