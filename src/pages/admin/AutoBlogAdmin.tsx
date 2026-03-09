@@ -63,7 +63,14 @@ const AutoBlogAdmin = () => {
       setPreview(data);
       toast.success(data?.message || "Blog generated and published.");
     } catch (e: any) {
-      toast.error(e.message || "Failed to generate blog");
+      const msg = String(e?.message || "Failed to generate blog");
+      const status = Number(e?.status || 0);
+      const duplicateBlocked = status === 409 || /topic is too close|already exists|duplicate/i.test(msg.toLowerCase());
+      if (duplicateBlocked) {
+        toast(msg);
+      } else {
+        toast.error(msg);
+      }
     }
     setGenerating(false);
   };

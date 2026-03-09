@@ -61,7 +61,17 @@ export const useAdmin = () => {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    if (!error) return { error: null };
+
+    const message = `${error.message || ""}`.toLowerCase();
+    if (message.includes("invalid login credentials")) {
+      return { error: new Error("Invalid email or password.") };
+    }
+    if (message.includes("email not confirmed")) {
+      return { error: new Error("Email not confirmed. Please verify your inbox first.") };
+    }
+
+    return { error: new Error(error.message || "Sign in failed") };
   };
 
   const signUp = async (email: string, password: string) => {

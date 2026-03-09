@@ -7,6 +7,16 @@ type ParsedFunctionError = {
   status?: number;
 };
 
+type EdgeFunctionError = Error & {
+  status?: number;
+};
+
+function withStatus(message: string, status?: number): EdgeFunctionError {
+  const error = new Error(message) as EdgeFunctionError;
+  if (status !== undefined) error.status = status;
+  return error;
+}
+
 async function parseFunctionError(error: unknown): Promise<ParsedFunctionError> {
   const fallback = error instanceof Error ? error.message : String(error || "Edge function call failed");
   const context = (error as any)?.context;
@@ -73,7 +83,7 @@ async function invokeWithPublishableToken<T = any>(functionName: string, options
     });
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err || "network error");
-    throw new Error(`Network error calling ${functionName} at ${endpoint}: ${reason}`);
+    throw withStatus(`Network error calling ${functionName} at ${endpoint}: ${reason}`);
   }
 
   const raw = await response.text().catch(() => "");
@@ -87,7 +97,7 @@ async function invokeWithPublishableToken<T = any>(functionName: string, options
 
   if (!response.ok) {
     const message = parsed?.error || parsed?.message || raw || `Function ${functionName} failed with ${response.status}`;
-    throw new Error(String(message));
+    throw withStatus(String(message), response.status);
   }
 
   return (parsed ?? (raw as unknown as T)) as T;
@@ -162,5 +172,5 @@ export async function invokeAdminFunction<T = any>(functionName: string, options
     }
   }
 
-  throw new Error(details.message || "Edge function call failed");
+  throw withStatus(details.message || "Edge function call failed", details.status);
 }
