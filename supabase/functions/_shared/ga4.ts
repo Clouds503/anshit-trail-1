@@ -17,17 +17,19 @@ type Ga4Result = {
 
 const GA4_COLLECT_BASE = "https://www.google-analytics.com/mp/collect";
 const GA4_DEBUG_BASE = "https://www.google-analytics.com/debug/mp/collect";
+const GA4_MEASUREMENT_ID_FALLBACK = "G-ZKJ801DZNX";
+const GA4_API_SECRET_FALLBACK = "Kg6kBlBIT4ylVPVfe-6kPA";
 
 function getEnv(name: string): string {
   return (Deno.env.get(name) || "").trim();
 }
 
 function getMeasurementId(): string {
-  return getEnv("GA4_MEASUREMENT_ID") || getEnv("GA_MEASUREMENT_ID");
+  return getEnv("GA4_MEASUREMENT_ID") || getEnv("GA_MEASUREMENT_ID") || GA4_MEASUREMENT_ID_FALLBACK;
 }
 
 function getApiSecret(): string {
-  return getEnv("GA4_API_SECRET") || getEnv("GA_API_SECRET");
+  return getEnv("GA4_API_SECRET") || getEnv("GA_API_SECRET") || GA4_API_SECRET_FALLBACK;
 }
 
 function isDebugEnabled(): boolean {

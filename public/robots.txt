@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://oxvjyrwyrfggbaqyhaov.supabase.co/functions/v1/sitemap
+Sitemap: https://cloudstrail.com/sitemap.xml
