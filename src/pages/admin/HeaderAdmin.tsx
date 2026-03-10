@@ -21,13 +21,14 @@ const contactFields: CrudField[] = [
     showInTable: true,
     options: [
       { label: "Phone", value: "phone" },
+      { label: "Address", value: "address" },
       { label: "CTA Button", value: "cta" },
     ],
     defaultValue: "phone",
   },
-  { key: "label", label: "Label", type: "text", required: true, showInTable: true, placeholder: "Call Us / LMS" },
-  { key: "value", label: "Display Value", type: "text", required: true, showInTable: true, placeholder: "+91... / LMS" },
-  { key: "href", label: "Action URL", type: "url", showInTable: true, placeholder: "tel:+91... or /enroll" },
+  { key: "label", label: "Label", type: "text", required: true, showInTable: true, placeholder: "Call Us / Address / LMS" },
+  { key: "value", label: "Display Value", type: "text", required: true, showInTable: true, placeholder: "+91... / Noida, Uttar Pradesh / LMS" },
+  { key: "href", label: "Action URL", type: "url", showInTable: true, placeholder: "tel:+91..., map URL, or /enroll" },
   { key: "sort_order", label: "Sort Order", type: "number", showInTable: true, defaultValue: 0 },
   { key: "is_active", label: "Active", type: "boolean", showInTable: true, defaultValue: true },
 ];
@@ -68,6 +69,17 @@ const HeaderAdmin = () => {
         label: "Enroll Now",
         value: "Enroll Now",
         href: "/enroll",
+        sort_order: 2,
+        is_active: true,
+      });
+    }
+
+    if (!existingTypes.has("address")) {
+      missingRows.push({
+        contact_type: "address",
+        label: "Visit Us",
+        value: "Noida, Uttar Pradesh",
+        href: "https://maps.google.com/?q=Noida%2C%20Uttar%20Pradesh",
         sort_order: 1,
         is_active: true,
       });
@@ -93,10 +105,10 @@ const HeaderAdmin = () => {
     <div className="space-y-10">
       <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
         <p className="mb-3">
-          Header navigation and CTA/phone entries are managed here. Logo size and site title are in Settings -&gt; Branding.
+          Header navigation and CTA, phone, and address entries are managed here. Logo size and site title are in Settings -&gt; Branding.
         </p>
         <Button type="button" variant="outline" onClick={ensureHeaderContacts} disabled={repairing}>
-          {repairing ? "Repairing..." : "Repair Missing Phone/CTA Rows"}
+          {repairing ? "Repairing..." : "Repair Missing Phone/Address/CTA Rows"}
         </Button>
       </div>
       <CrudTable title="Header Navigation Links" tableName="header_links" fields={navLinkFields} orderBy="sort_order" />

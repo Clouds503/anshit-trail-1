@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -16,7 +16,7 @@ type HeaderLink = {
 };
 
 type HeaderContact = {
-  contact_type: "phone" | "cta";
+  contact_type: "phone" | "address" | "cta";
   label: string;
   value: string;
   href?: string | null;
@@ -38,6 +38,7 @@ const fallbackNavLinks: HeaderLink[] = [
 
 const fallbackContacts: HeaderContact[] = [
   { contact_type: "phone", label: "Call Us", value: "+91 92598 98397", href: "tel:+919259898397" },
+  { contact_type: "address", label: "Visit Us", value: "Noida, Uttar Pradesh", href: "https://maps.google.com/?q=Noida%2C%20Uttar%20Pradesh" },
   { contact_type: "cta", label: "LMS", value: "LMS", href: "/enroll" },
 ];
 
@@ -138,7 +139,8 @@ const Header = () => {
   const links = navLinksError ? fallbackNavLinks : (navLinks || []);
   const contacts = headerContactsError ? fallbackContacts : (headerContacts || []);
   const phoneContact = contacts.find((c) => c.contact_type === "phone") || (headerContactsError ? fallbackContacts[0] : null);
-  const ctaContact = contacts.find((c) => c.contact_type === "cta") || (headerContactsError ? fallbackContacts[1] : null);
+  const addressContact = contacts.find((c) => c.contact_type === "address") || (headerContactsError ? fallbackContacts[1] : null);
+  const ctaContact = contacts.find((c) => c.contact_type === "cta") || (headerContactsError ? fallbackContacts[2] : null);
   const normalizedCtaHref = ctaContact ? normalizeInternalRouteHref(ctaContact.href || "/") : null;
   const siteTitle = branding?.siteTitle || "Clouds Trail";
   const headerLogoHeight = branding?.headerLogoHeight || 40;
@@ -170,6 +172,15 @@ const Header = () => {
           {phoneContact ? (
             <a href={phoneContact.href || `tel:${(phoneContact.value || "").replace(/\s+/g, "")}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <Phone className="h-4 w-4" /> {phoneContact.value}
+            </a>
+          ) : null}
+          {addressContact ? (
+            <a
+              href={addressContact.href || "#"}
+              className="hidden lg:flex max-w-[220px] items-center gap-1.5 truncate text-sm text-muted-foreground hover:text-foreground transition-colors"
+              title={addressContact.value}
+            >
+              <MapPin className="h-4 w-4 shrink-0" /> <span className="truncate">{addressContact.value}</span>
             </a>
           ) : null}
           {ctaContact && normalizedCtaHref ? (
@@ -205,6 +216,24 @@ const Header = () => {
                 })(),
               )}
               <SocialLinks placement="header" variant="header" className="pt-2" />
+              {phoneContact ? (
+                <a
+                  href={phoneContact.href || `tel:${(phoneContact.value || "").replace(/\s+/g, "")}`}
+                  className="flex items-center gap-2 py-2 text-sm text-foreground"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Phone className="h-4 w-4 text-primary" /> {phoneContact.value}
+                </a>
+              ) : null}
+              {addressContact ? (
+                <a
+                  href={addressContact.href || "#"}
+                  className="flex items-center gap-2 py-2 text-sm text-foreground"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <MapPin className="h-4 w-4 text-primary" /> {addressContact.value}
+                </a>
+              ) : null}
               {ctaContact && normalizedCtaHref ? (
                 isInternalRouteHref(normalizedCtaHref) ? (
                   <Link to={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
