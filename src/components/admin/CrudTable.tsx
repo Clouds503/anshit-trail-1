@@ -11,6 +11,7 @@ import { Plus, Pencil, Trash2, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { buildMasterImagePrompt, generateImageFromPrompt, uploadImageFileToCloudinary } from "@/lib/admin-image";
 import { invokeAdminFunction } from "@/lib/edge-functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface CrudField {
   key: string;
@@ -32,6 +33,7 @@ interface CrudTableProps {
 }
 
 const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending = true }: CrudTableProps) => {
+  const queryClient = useQueryClient();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,6 +113,42 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
       payload.author = "Clouds Trail";
     }
 
+    if (tableName === "short_links") {
+      const cleanedSlug = `${payload.slug || ""}`
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      if (!cleanedSlug) {
+        toast.error("Short code is required.");
+        setSaving(false);
+        return;
+      }
+
+      const rawTarget = `${payload.target_url || ""}`.trim();
+      if (!rawTarget) {
+        toast.error("Target URL is required.");
+        setSaving(false);
+        return;
+      }
+
+      if (/^javascript:/i.test(rawTarget)) {
+        toast.error("Unsupported target URL.");
+        setSaving(false);
+        return;
+      }
+
+      payload.slug = cleanedSlug;
+      payload.target_url = /^https?:\/\//i.test(rawTarget)
+        ? rawTarget
+        : rawTarget.startsWith("/")
+          ? rawTarget
+          : `/${rawTarget.replace(/^\/+/, "")}`;
+    }
+
     let savedRow: any = null;
     if (editItem) {
       const { data, error } = await (supabase as any)
@@ -140,6 +178,15 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
     setSaving(false);
     setDialogOpen(false);
     fetchData();
+    queryClient.invalidateQueries({ queryKey: [tableName] });
+
+    if (tableName === "header_links" || tableName === "header_contacts") {
+      queryClient.invalidateQueries({ queryKey: ["header_links"] });
+      queryClient.invalidateQueries({ queryKey: ["header_contacts"] });
+    }
+    if (tableName === "site_settings") {
+      queryClient.invalidateQueries({ queryKey: ["site_branding_header"] });
+    }
 
     // Trigger indexing for public content updates.
     if (savedRow && ["blogs", "programs", "page_content", "seo_settings", "top_banner_items", "trust_partners"].includes(tableName)) {
@@ -164,6 +211,11 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
     else toast.success("Deleted successfully");
     setDeleteId(null);
     fetchData();
+    queryClient.invalidateQueries({ queryKey: [tableName] });
+    if (tableName === "header_links" || tableName === "header_contacts") {
+      queryClient.invalidateQueries({ queryKey: ["header_links"] });
+      queryClient.invalidateQueries({ queryKey: ["header_contacts"] });
+    }
   };
 
   const isImageField = (field: CrudField) =>

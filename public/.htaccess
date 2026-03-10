@@ -23,6 +23,7 @@ AddDefaultCharset UTF-8
   # Mark admin and function routes as noindex at header level.
   RewriteRule ^admin(/.*)?$ - [E=NOINDEX:1]
   RewriteRule ^functions(/.*)?$ - [E=NOINDEX:1]
+  RewriteRule ^s(/.*)?$ - [E=NOINDEX:1]
 
   # Force public SPA slugs to index.html even if stale folders/files exist on host
   RewriteRule ^(about|about-us|contact|programs|courses|course|blog|blogs|terms|terms-condition|terms-conditions|terms-and-conditions|terms-of-service|privacy|privacy-policy|refund|refund-policy|enroll)(/.*)?$ index.html [L]

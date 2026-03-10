@@ -655,6 +655,48 @@ export type Database = {
         }
         Relationships: []
       }
+      short_links: {
+        Row: {
+          anchor_text: string | null
+          click_count: number
+          created_at: string
+          id: string
+          is_active: boolean
+          last_clicked_at: string | null
+          notes: string | null
+          slug: string
+          sort_order: number
+          target_url: string
+          updated_at: string
+        }
+        Insert: {
+          anchor_text?: string | null
+          click_count?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_clicked_at?: string | null
+          notes?: string | null
+          slug: string
+          sort_order?: number
+          target_url: string
+          updated_at?: string
+        }
+        Update: {
+          anchor_text?: string | null
+          click_count?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_clicked_at?: string | null
+          notes?: string | null
+          slug?: string
+          sort_order?: number
+          target_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           created_at: string | null
@@ -855,6 +897,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      resolve_short_link: {
+        Args: {
+          p_slug: string
+        }
+        Returns: {
+          target_url: string
+        }[]
       }
     }
     Enums: {

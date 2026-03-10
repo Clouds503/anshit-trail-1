@@ -414,6 +414,7 @@ const RouteSeoManager = () => {
     const normalizedPath = normalizePath(pathname);
     const canonicalFallbackUrl = `${CANONICAL_ORIGIN}${normalizedPath}`;
     const isAdminRoute = normalizedPath.startsWith("/admin");
+    const isShortLinkRoute = /^\/s\/[^/]+$/.test(normalizedPath);
     const fallback = resolveFallbackMeta(normalizedPath);
     const fallbackTitle = fitSeoTitle(fallback.title, fallback.title);
     const fallbackDescription = fitSeoDescription(fallback.description, fallback.description);
@@ -436,9 +437,13 @@ const RouteSeoManager = () => {
     ensureMetaTag("name", "twitter:title", fallbackTitle);
     ensureMetaTag("name", "twitter:description", fallbackDescription);
     ensureMetaTag("name", "keywords", fallbackKeywords.join(", "));
-    ensureMetaTag("name", "robots", isAdminRoute ? "noindex, nofollow, noarchive" : "index, follow");
+    ensureMetaTag(
+      "name",
+      "robots",
+      isAdminRoute || isShortLinkRoute ? "noindex, nofollow, noarchive" : "index, follow",
+    );
 
-    if (isAdminRoute) {
+    if (isAdminRoute || isShortLinkRoute) {
       ensureJsonLd(null);
       return;
     }

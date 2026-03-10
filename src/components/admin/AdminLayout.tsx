@@ -30,6 +30,7 @@ const navItems = [
   { title: "Contact Info", url: "/admin/contact", icon: Phone },
   { title: "Social Links", url: "/admin/social", icon: Share2 },
   { title: "Button Routes", url: "/admin/button-routes", icon: Link2 },
+  { title: "Short URL Links", url: "/admin/short-links", icon: Link2 },
   { title: "Leads", url: "/admin/leads", icon: ClipboardList },
   { title: "Enrollments", url: "/admin/enrollments", icon: CreditCard },
   { title: "SEO", url: "/admin/seo", icon: Search },

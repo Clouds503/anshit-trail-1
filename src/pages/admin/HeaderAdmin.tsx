@@ -31,6 +31,9 @@ const contactFields: CrudField[] = [
 const HeaderAdmin = () => {
   return (
     <div className="space-y-10">
+      <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
+        Header navigation and CTA/phone entries are managed here. Logo size and site title are in Settings -&gt; Branding.
+      </div>
       <CrudTable title="Header Navigation Links" tableName="header_links" fields={navLinkFields} orderBy="sort_order" />
       <CrudTable title="Header Contact and CTA" tableName="header_contacts" fields={contactFields} orderBy="sort_order" />
     </div>

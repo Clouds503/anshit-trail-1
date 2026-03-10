@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import PublicPageAnalytics from "./components/PublicPageAnalytics";
+import PublicMetaPixel from "./components/PublicMetaPixel";
 import RouteSeoManager from "./components/RouteSeoManager";
 import Index from "./pages/Index";
 import CourseDetail from "./pages/CourseDetail";
@@ -17,6 +18,7 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 import EnrollNow from "./pages/EnrollNow";
+import ShortLinkRedirect from "./pages/ShortLinkRedirect";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminGuard from "./components/admin/AdminGuard";
@@ -33,6 +35,7 @@ import FooterAdmin from "./pages/admin/FooterAdmin";
 import ContactAdmin from "./pages/admin/ContactAdmin";
 import SocialLinksAdmin from "./pages/admin/SocialLinksAdmin";
 import ButtonRoutesAdmin from "./pages/admin/ButtonRoutesAdmin";
+import ShortLinksAdmin from "./pages/admin/ShortLinksAdmin";
 import SeoAdmin from "./pages/admin/SeoAdmin";
 import SettingsAdmin from "./pages/admin/SettingsAdmin";
 import AutoBlogAdmin from "./pages/admin/AutoBlogAdmin";
@@ -64,6 +67,7 @@ const App = () => (
         <ScrollToTop />
         <RouteSeoManager />
         <PublicPageAnalytics />
+        <PublicMetaPixel />
         <Routes>
           {/* Public */}
           <Route path="/" element={<Index />} />
@@ -87,6 +91,7 @@ const App = () => (
           <Route path="/refund" element={<RefundPolicy />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
           <Route path="/enroll" element={<EnrollNow />} />
+          <Route path="/s/:slug" element={<ShortLinkRedirect />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -112,6 +117,7 @@ const App = () => (
           <Route path="/admin/banners" element={<AdminPage><BannersAdmin /></AdminPage>} />
           <Route path="/admin/social" element={<AdminPage><SocialLinksAdmin /></AdminPage>} />
           <Route path="/admin/button-routes" element={<AdminPage><ButtonRoutesAdmin /></AdminPage>} />
+          <Route path="/admin/short-links" element={<AdminPage><ShortLinksAdmin /></AdminPage>} />
           <Route path="/admin/seo" element={<AdminPage><SeoAdmin /></AdminPage>} />
           <Route path="/admin/settings" element={<AdminPage><SettingsAdmin /></AdminPage>} />
           <Route path="/admin/content-seo" element={<AdminPage><ContentSeoAdmin /></AdminPage>} />

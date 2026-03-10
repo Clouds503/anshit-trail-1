@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import logo from "@/assets/logo.webp";
 import SocialLinks from "@/components/SocialLinks";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type HeaderLink = {
   label: string;
@@ -49,6 +49,7 @@ const parsePositiveInt = (value: unknown, fallback: number) => {
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: navLinks } = useQuery({
     queryKey: ["header_links"],
@@ -60,6 +61,7 @@ const Header = () => {
         .order("sort_order");
       return data?.length ? (data as HeaderLink[]) : null;
     },
+    refetchOnMount: "always",
   });
 
   const { data: headerContacts } = useQuery({
@@ -72,6 +74,7 @@ const Header = () => {
         .order("sort_order");
       return data?.length ? (data as HeaderContact[]) : null;
     },
+    refetchOnMount: "always",
   });
 
   const { data: branding } = useQuery({
@@ -90,7 +93,43 @@ const Header = () => {
         headerLogoHeight: parsePositiveInt(map.header_logo_height, 40),
       } as BrandingSettings;
     },
+    refetchOnMount: "always",
   });
+
+  useEffect(() => {
+    const refreshHeaderData = () => {
+      queryClient.invalidateQueries({ queryKey: ["header_links"] });
+      queryClient.invalidateQueries({ queryKey: ["header_contacts"] });
+    };
+
+    const channel = supabase
+      .channel("header-live-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "header_links" },
+        refreshHeaderData,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "header_contacts" },
+        refreshHeaderData,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_settings" },
+        (payload: any) => {
+          const key = `${payload?.new?.key || payload?.old?.key || ""}`.trim();
+          if (key === "site_title" || key === "header_logo_height") {
+            queryClient.invalidateQueries({ queryKey: ["site_branding_header"] });
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const links = navLinks?.length ? navLinks : fallbackNavLinks;
   const contacts = headerContacts?.length ? headerContacts : fallbackContacts;
