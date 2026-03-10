@@ -67,8 +67,8 @@ const ContactSection = ({
     },
   });
 
-  const officeAddress = contactInfo?.address || "Noida, Uttar Pradesh, India";
-  const phoneNumber = contactInfo?.phone || "+91 99999 99999";
+  const officeAddress = contactInfo?.address || "Noida, Uttar Pradesh, India 201301";
+  const phoneNumber = contactInfo?.phone || "+91 92598 98397";
   const emailAddress = contactInfo?.email || "info@cloudstrail.com";
   const courseOptions = programs?.length ? programs : fallbackCourses;
 

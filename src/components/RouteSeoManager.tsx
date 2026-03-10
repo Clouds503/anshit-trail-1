@@ -4,6 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 const CANONICAL_ORIGIN = "https://www.cloudstrail.com";
 const JSON_LD_SCRIPT_ID = "route-seo-jsonld";
+const BUSINESS_PHONE = "+91 92598 98397";
+const BUSINESS_ADDRESS = {
+  "@type": "PostalAddress",
+  streetAddress: "Noida, Uttar Pradesh",
+  addressLocality: "Noida",
+  addressRegion: "Uttar Pradesh",
+  postalCode: "201301",
+  addressCountry: "IN",
+};
 
 const PATH_ALIAS_MAP = new Map<string, string>([
   ["/home", "/"],
@@ -317,6 +326,7 @@ function resolveOgType(path: string): "article" | "website" {
 function buildFallbackSchema(path: string, canonicalUrl: string, title: string, description: string) {
   const orgId = `${CANONICAL_ORIGIN}#organization`;
   const websiteId = `${CANONICAL_ORIGIN}#website`;
+  const localBusinessId = `${CANONICAL_ORIGIN}#localbusiness`;
   const webpageId = `${canonicalUrl}#webpage`;
 
   const graph: Record<string, unknown>[] = [
@@ -326,6 +336,15 @@ function buildFallbackSchema(path: string, canonicalUrl: string, title: string, 
       name: "Clouds Trail",
       url: CANONICAL_ORIGIN,
       logo: `${CANONICAL_ORIGIN}/favicon.ico`,
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          telephone: BUSINESS_PHONE,
+          contactType: "customer support",
+          areaServed: "IN",
+          availableLanguage: ["English", "Hindi"],
+        },
+      ],
     },
     {
       "@type": "WebSite",
@@ -344,6 +363,17 @@ function buildFallbackSchema(path: string, canonicalUrl: string, title: string, 
       isPartOf: { "@id": websiteId },
       about: { "@id": orgId },
       inLanguage: "en-IN",
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": localBusinessId,
+      name: "Clouds Trail",
+      url: CANONICAL_ORIGIN,
+      telephone: BUSINESS_PHONE,
+      address: BUSINESS_ADDRESS,
+      areaServed: "IN",
+      image: `${CANONICAL_ORIGIN}/og-image.png`,
+      parentOrganization: { "@id": orgId },
     },
   ];
 

@@ -37,7 +37,16 @@
             "@id": "https://www.cloudstrail.com#organization",
             "name": "Clouds Trail",
             "url": "https://www.cloudstrail.com",
-            "logo": "https://www.cloudstrail.com/favicon.webp"
+            "logo": "https://www.cloudstrail.com/favicon.webp",
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "telephone": "+91 92598 98397",
+                "contactType": "customer support",
+                "areaServed": "IN",
+                "availableLanguage": ["English", "Hindi"]
+              }
+            ]
           },
           {
             "@type": "WebSite",
@@ -46,6 +55,23 @@
             "name": "Clouds Trail",
             "inLanguage": "en-IN",
             "publisher": { "@id": "https://www.cloudstrail.com#organization" }
+          },
+          {
+            "@type": "LocalBusiness",
+            "@id": "https://www.cloudstrail.com#localbusiness",
+            "name": "Clouds Trail",
+            "url": "https://www.cloudstrail.com",
+            "telephone": "+91 92598 98397",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Noida, Uttar Pradesh",
+              "addressLocality": "Noida",
+              "addressRegion": "Uttar Pradesh",
+              "postalCode": "201301",
+              "addressCountry": "IN"
+            },
+            "areaServed": "IN",
+            "parentOrganization": { "@id": "https://www.cloudstrail.com#organization" }
           }
         ]
       }
@@ -114,7 +140,12 @@
   <body>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1270055731046727&ev=PageView&noscript=1"
-    /></noscript>
+    />
+    <div style="padding:12px;font-family:Arial,sans-serif;line-height:1.5;">
+      <strong>Clouds Trail</strong><br />
+      Address: Noida, Uttar Pradesh, India 201301<br />
+      Phone: +91 92598 98397
+    </div></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

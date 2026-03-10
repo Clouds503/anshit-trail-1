@@ -7,15 +7,15 @@ AddDefaultCharset UTF-8
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # Force HTTPS + www canonical host in a single redirect
-  RewriteCond %{HTTPS} !=on [OR]
-  RewriteCond %{HTTP_HOST} !^www\.cloudstrail\.com$ [NC]
-  RewriteRule ^ https://www.cloudstrail.com%{REQUEST_URI} [R=301,L]
-
-  # Canonical trailing-slash policy: redirect /path/ -> /path (except root)
+  # Canonical trailing-slash policy first (avoids an extra redirect hop on non-canonical hosts)
   RewriteCond %{REQUEST_URI} !^/$
   RewriteCond %{REQUEST_URI} .+/$
   RewriteRule ^(.+)/$ https://www.cloudstrail.com/$1 [R=301,L]
+
+  # Force HTTPS + www canonical host
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} !^www\.cloudstrail\.com$ [NC]
+  RewriteRule ^ https://www.cloudstrail.com%{REQUEST_URI} [R=301,L]
 
   # Dynamic sitemap endpoint (auto-updates from blogs/programs data)
   RewriteRule ^sitemap\.xml$ https://oxvjyrwyrfggbaqyhaov.supabase.co/functions/v1/sitemap [R=301,L]

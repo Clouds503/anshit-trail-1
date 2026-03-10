@@ -7,6 +7,7 @@ import logo from "@/assets/logo.webp";
 import SocialLinks from "@/components/SocialLinks";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isInternalRouteHref, normalizeInternalRouteHref } from "@/lib/public-url";
 
 type HeaderLink = {
   label: string;
@@ -36,11 +37,10 @@ const fallbackNavLinks: HeaderLink[] = [
 ];
 
 const fallbackContacts: HeaderContact[] = [
-  { contact_type: "phone", label: "Call Us", value: "+91 99999 99999", href: "tel:+919999999999" },
+  { contact_type: "phone", label: "Call Us", value: "+91 92598 98397", href: "tel:+919259898397" },
   { contact_type: "cta", label: "LMS", value: "LMS", href: "/enroll" },
 ];
 
-const isInternalRoute = (href: string) => href.startsWith("/") && !href.startsWith("//");
 const parsePositiveInt = (value: unknown, fallback: number) => {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -135,6 +135,7 @@ const Header = () => {
   const contacts = headerContacts?.length ? headerContacts : fallbackContacts;
   const phoneContact = contacts.find((c) => c.contact_type === "phone") || fallbackContacts[0];
   const ctaContact = contacts.find((c) => c.contact_type === "cta") || fallbackContacts[1];
+  const normalizedCtaHref = normalizeInternalRouteHref(ctaContact.href || "/");
   const siteTitle = branding?.siteTitle || "Clouds Trail";
   const headerLogoHeight = branding?.headerLogoHeight || 40;
 
@@ -147,14 +148,15 @@ const Header = () => {
 
         <nav className="hidden md:flex items-center gap-7">
           {links.map((link) => {
+            const normalizedHref = normalizeInternalRouteHref(link.href || "/");
             const cls = link.is_highlight
               ? "text-sm font-semibold bg-primary text-primary-foreground px-4 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
               : "text-sm font-medium text-muted-foreground hover:text-primary transition-colors";
 
-            return isInternalRoute(link.href) ? (
-              <Link key={`${link.label}-${link.href}`} to={link.href} className={cls}>{link.label}</Link>
+            return isInternalRouteHref(normalizedHref) ? (
+              <Link key={`${link.label}-${normalizedHref}`} to={normalizedHref} className={cls}>{link.label}</Link>
             ) : (
-              <a key={`${link.label}-${link.href}`} href={link.href} className={cls}>{link.label}</a>
+              <a key={`${link.label}-${normalizedHref}`} href={normalizedHref} className={cls}>{link.label}</a>
             );
           })}
         </nav>
@@ -164,12 +166,12 @@ const Header = () => {
           <a href={phoneContact.href || `tel:${phoneContact.value.replace(/\s+/g, "")}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <Phone className="h-4 w-4" /> {phoneContact.value}
           </a>
-          {isInternalRoute(ctaContact.href || "") ? (
-            <Link to={ctaContact.href || "/"}>
+          {isInternalRouteHref(normalizedCtaHref) ? (
+            <Link to={normalizedCtaHref}>
               <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
             </Link>
           ) : (
-            <a href={ctaContact.href || "#"}>
+            <a href={normalizedCtaHref}>
               <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
             </a>
           )}
@@ -185,19 +187,22 @@ const Header = () => {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="md:hidden bg-background border-b overflow-hidden">
             <nav className="container py-4 flex flex-col gap-2">
               {links.map((link) =>
-                isInternalRoute(link.href) ? (
-                  <Link key={`${link.label}-${link.href}`} to={link.href} className="text-sm font-medium text-foreground py-2" onClick={() => setMobileOpen(false)}>{link.label}</Link>
-                ) : (
-                  <a key={`${link.label}-${link.href}`} href={link.href} className="text-sm font-medium text-foreground py-2" onClick={() => setMobileOpen(false)}>{link.label}</a>
-                ),
+                (() => {
+                  const normalizedHref = normalizeInternalRouteHref(link.href || "/");
+                  return isInternalRouteHref(normalizedHref) ? (
+                    <Link key={`${link.label}-${normalizedHref}`} to={normalizedHref} className="text-sm font-medium text-foreground py-2" onClick={() => setMobileOpen(false)}>{link.label}</Link>
+                  ) : (
+                    <a key={`${link.label}-${normalizedHref}`} href={normalizedHref} className="text-sm font-medium text-foreground py-2" onClick={() => setMobileOpen(false)}>{link.label}</a>
+                  );
+                })(),
               )}
               <SocialLinks placement="header" variant="header" className="pt-2" />
-              {isInternalRoute(ctaContact.href || "") ? (
-                <Link to={ctaContact.href || "/"} onClick={() => setMobileOpen(false)}>
+              {isInternalRouteHref(normalizedCtaHref) ? (
+                <Link to={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
                   <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
                 </Link>
               ) : (
-                <a href={ctaContact.href || "#"} onClick={() => setMobileOpen(false)}>
+                <a href={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
                   <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
                 </a>
               )}

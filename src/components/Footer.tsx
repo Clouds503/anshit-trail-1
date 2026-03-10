@@ -5,6 +5,7 @@ import logo from "@/assets/logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import SocialLinks from "@/components/SocialLinks";
+import { isInternalRouteHref, normalizeInternalRouteHref } from "@/lib/public-url";
 
 type FooterBrandingSettings = {
   siteTitle: string;
@@ -77,8 +78,8 @@ const Footer = () => {
     },
   });
 
-  const address = contactInfo?.address || "Noida, Uttar Pradesh";
-  const phone = contactInfo?.phone || "+91 99999 99999";
+  const address = contactInfo?.address || "Noida, Uttar Pradesh, India 201301";
+  const phone = contactInfo?.phone || "+91 92598 98397";
   const email = contactInfo?.email || "info@cloudstrail.com";
   const footerCols = footerSections ? Math.max(3, Math.min((footerSections.length || 0) + 2, 6)) : 4;
   const brandTitle = footerBranding?.siteTitle || "Clouds Trail";
@@ -118,12 +119,33 @@ const Footer = () => {
                 <ul className="space-y-2">
                   {section.links.map((link: any) => (
                     <li key={link.id}>
-                      <Link
-                        to={String(link.label || "").trim().toLowerCase() === "all courses" ? "/programs" : link.url}
-                        className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary"
-                      >
-                        {String(link.label || "").trim().toLowerCase() === "all courses" ? "Programs" : link.label}
-                      </Link>
+                      {(() => {
+                        const isAllCourses = String(link.label || "").trim().toLowerCase() === "all courses";
+                        const normalizedUrl = normalizeInternalRouteHref(isAllCourses ? "/programs" : `${link.url || "/"}`);
+                        const label = isAllCourses ? "Programs" : link.label;
+
+                        if (isInternalRouteHref(normalizedUrl)) {
+                          return (
+                            <Link
+                              to={normalizedUrl}
+                              className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary"
+                            >
+                              {label}
+                            </Link>
+                          );
+                        }
+
+                        return (
+                          <a
+                            href={normalizedUrl}
+                            className="text-sm text-secondary-foreground/75 transition-colors hover:text-primary"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {label}
+                          </a>
+                        );
+                      })()}
                     </li>
                   ))}
                 </ul>
