@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 interface StudentRow {
   id: string;
@@ -66,7 +67,15 @@ const OurStudentsSection = () => {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-14 w-14 rounded-full overflow-hidden border bg-accent/30 shrink-0">
                       {student.image_url ? (
-                        <img src={student.image_url} alt={student.name} className="w-full h-full object-cover" loading="lazy" />
+                        <img
+                          src={getOptimizedImageUrl(student.image_url, { width: 160 })}
+                          srcSet={getOptimizedImageSrcSet(student.image_url, [80, 120, 160, 240, 320])}
+                          sizes="56px"
+                          alt={student.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center font-heading font-bold text-primary/50">
                           {student.name.charAt(0)}

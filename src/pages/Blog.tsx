@@ -17,6 +17,7 @@ import MarqueeBanner from "@/components/MarqueeBanner";
 import PublicLongformContent from "@/components/PublicLongformContent";
 import { blogPosts } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 type BlogCard = {
   slug: string;
@@ -320,10 +321,13 @@ const Blog = () => {
                           <div className="relative h-44 overflow-hidden sm:h-48">
                             {post.image ? (
                               <img
-                                src={post.image}
+                                src={getOptimizedImageUrl(post.image, { width: 900 })}
+                                srcSet={getOptimizedImageSrcSet(post.image)}
+                                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 360px, 390px"
                                 alt={post.title}
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 loading="lazy"
+                                decoding="async"
                               />
                             ) : (
                               <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 text-4xl font-black text-primary/30">
@@ -421,10 +425,13 @@ const Blog = () => {
                       <div className="relative h-44 overflow-hidden rounded-t-2xl">
                         {post.image ? (
                           <img
-                            src={post.image}
+                            src={getOptimizedImageUrl(post.image, { width: 800 })}
+                            srcSet={getOptimizedImageSrcSet(post.image)}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             alt={post.title}
                             className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                             loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 text-4xl font-black text-primary/30">

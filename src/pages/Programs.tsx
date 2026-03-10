@@ -9,6 +9,7 @@ import PageHero from "@/components/PageHero";
 import BestCoursesSlider from "@/components/BestCoursesSlider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 const Programs = () => {
   const { data: programs } = useQuery({
@@ -170,7 +171,15 @@ const Programs = () => {
                   >
                     <div className="relative h-20 sm:h-24 md:h-32 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
                       {program.image_url ? (
-                        <img src={program.image_url} alt={program.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <img
+                          src={getOptimizedImageUrl(program.image_url, { width: 900 })}
+                          srcSet={getOptimizedImageSrcSet(program.image_url)}
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          alt={program.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-primary/20 text-3xl md:text-4xl font-heading font-bold">{program.title.charAt(0)}</div>
                       )}

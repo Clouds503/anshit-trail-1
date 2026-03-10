@@ -47,7 +47,7 @@ const ROUTE_META_DEFAULTS: Array<{
     matcher: /^\/$/,
     title: "Salesforce & Workday Training Institute | Clouds Trail",
     description:
-      "Clouds Trail provides Salesforce Administration, Developer, LWC, OmniStudio, and Workday training with projects, career guidance, and placement support.",
+      "Clouds Trail provides Salesforce administration and cloud salesforce programs with practical training, career guidance, and learners currently placed at top companies.",
     keywords: [
       "clouds trail",
       "salesforce administration",
@@ -262,6 +262,72 @@ function smartTrim(text: string, maxChars: number): string {
   return (breakAt > Math.floor(maxChars * 0.7) ? candidate.slice(0, breakAt) : text.slice(0, maxChars)).trim();
 }
 
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "from",
+  "into",
+  "your",
+  "you",
+  "our",
+  "that",
+  "this",
+  "are",
+  "was",
+  "will",
+  "how",
+  "what",
+  "who",
+  "when",
+  "where",
+  "why",
+  "to",
+  "of",
+  "in",
+  "on",
+  "at",
+  "a",
+  "an",
+  "or",
+  "as",
+  "by",
+  "it",
+  "is",
+  "be",
+  "we",
+  "us",
+  "learn",
+  "training",
+  "program",
+  "programs",
+]);
+
+function extractKeywordTokens(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
+}
+
+function ensureDescriptionKeywordOverlap(title: string, description: string): string {
+  const titleTokens = Array.from(new Set(extractKeywordTokens(title)));
+  if (titleTokens.length === 0) return description;
+
+  const descriptionTokens = new Set(extractKeywordTokens(description));
+  const overlapCount = titleTokens.filter((token) => descriptionTokens.has(token)).length;
+  if (overlapCount >= 2) return description;
+
+  const additions = titleTokens.slice(0, 2).join(" and ");
+  if (!additions) return description;
+
+  const merged = `${description} Focus areas include ${additions}.`.replace(/\s+/g, " ").trim();
+  return merged.length > 160 ? `${smartTrim(merged, 157).replace(/[.,;:!?-]+$/, "")}...` : merged;
+}
+
 function fitSeoTitle(rawTitle: unknown, fallbackTitle: string): string {
   let title = normalizeText(rawTitle) || normalizeText(fallbackTitle) || "Clouds Trail Training Institute";
 
@@ -447,7 +513,10 @@ const RouteSeoManager = () => {
     const isShortLinkRoute = /^\/s\/[^/]+$/.test(normalizedPath);
     const fallback = resolveFallbackMeta(normalizedPath);
     const fallbackTitle = fitSeoTitle(fallback.title, fallback.title);
-    const fallbackDescription = fitSeoDescription(fallback.description, fallback.description);
+    const fallbackDescription = ensureDescriptionKeywordOverlap(
+      fallbackTitle,
+      fitSeoDescription(fallback.description, fallback.description),
+    );
     const fallbackKeywords = parseKeywords(null, fallback.keywords);
     const fallbackSchema = buildFallbackSchema(
       normalizedPath,
@@ -496,7 +565,10 @@ const RouteSeoManager = () => {
         : normalizedPath;
       const canonicalUrl = `${CANONICAL_ORIGIN}${canonicalPath}`;
       const finalTitle = fitSeoTitle(data.title, fallback.title);
-      const finalDescription = fitSeoDescription(data.description, fallback.description);
+      const finalDescription = ensureDescriptionKeywordOverlap(
+        finalTitle,
+        fitSeoDescription(data.description, fallback.description),
+      );
       const finalKeywords = parseKeywords(data.keywords, fallback.keywords);
       const robots =
         data.indexing_enabled === false

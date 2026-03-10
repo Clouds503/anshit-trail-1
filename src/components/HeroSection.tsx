@@ -5,11 +5,27 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
-import heroInstitute from "@/assets/hero-institute.png";
-import heroSlide2 from "@/assets/hero-slide-2.png";
-import heroSlide3 from "@/assets/hero-slide-3.png";
+import heroInstitute from "@/assets/hero-institute.webp";
+import heroInstitute480 from "@/assets/hero-institute-480.webp";
+import heroInstitute768 from "@/assets/hero-institute-768.webp";
+import heroInstitute1024 from "@/assets/hero-institute-1024.webp";
+import heroSlide2 from "@/assets/hero-slide-2.webp";
+import heroSlide2480 from "@/assets/hero-slide-2-480.webp";
+import heroSlide2768 from "@/assets/hero-slide-2-768.webp";
+import heroSlide21024 from "@/assets/hero-slide-2-1024.webp";
+import heroSlide3 from "@/assets/hero-slide-3.webp";
+import heroSlide3480 from "@/assets/hero-slide-3-480.webp";
+import heroSlide3768 from "@/assets/hero-slide-3-768.webp";
+import heroSlide31024 from "@/assets/hero-slide-3-1024.webp";
 
 type HeroMode = "3d" | "slideshow" | "static";
+
+type HeroSlide = {
+  image: string;
+  title: string;
+  subtitle: string;
+  srcSet?: string;
+};
 
 const highlights = [
   "100% Placement Assistance",
@@ -17,16 +33,31 @@ const highlights = [
   "25,000+ Students Placed",
 ];
 
-const defaultSlides = [
-  { image: heroInstitute, title: "Launch Your Tech Career", subtitle: "with Expert Training" },
-  { image: heroSlide2, title: "95% Placement Rate", subtitle: "at Top Companies" },
-  { image: heroSlide3, title: "Learn from Industry", subtitle: "Experts & Mentors" },
+const defaultSlides: HeroSlide[] = [
+  {
+    image: heroInstitute,
+    title: "Launch Your Tech Career",
+    subtitle: "with Expert Training",
+    srcSet: `${heroInstitute480} 480w, ${heroInstitute768} 768w, ${heroInstitute1024} 1024w`,
+  },
+  {
+    image: heroSlide2,
+    title: "95% Placement Rate",
+    subtitle: "at Top Companies",
+    srcSet: `${heroSlide2480} 480w, ${heroSlide2768} 768w, ${heroSlide21024} 1024w`,
+  },
+  {
+    image: heroSlide3,
+    title: "Learn from Industry",
+    subtitle: "Experts & Mentors",
+    srcSet: `${heroSlide3480} 480w, ${heroSlide3768} 768w, ${heroSlide31024} 1024w`,
+  },
 ];
 
 const HeroSection = () => {
   const [mode, setMode] = useState<HeroMode>("3d");
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState(defaultSlides);
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides);
   const [programs, setPrograms] = useState<string[]>([]);
   const [heroCarouselApi, setHeroCarouselApi] = useState<CarouselApi>();
   const [whatsappLink, setWhatsappLink] = useState("https://wa.me/919999999999?text=Hi!%20I'm%20interested%20in%20Clouds%20Trail%20courses.");
@@ -110,7 +141,15 @@ const HeroSection = () => {
                     {slides.map((slide, idx) => (
                       <CarouselItem key={idx} className="basis-[85%]">
                         <div className="relative rounded-2xl overflow-hidden border shadow-xl shadow-primary/20">
-                          <img src={slide.image} alt={slide.title} className="w-full h-[360px] object-cover" />
+                          <img
+                            src={slide.image}
+                            srcSet={slide.srcSet}
+                            sizes="(max-width: 640px) 85vw, (max-width: 1024px) 42vw, 420px"
+                            alt={slide.title}
+                            className="w-full h-[360px] object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
                           <div className="absolute left-4 right-4 bottom-4">
                             <p className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wide">Featured Program</p>
@@ -149,8 +188,13 @@ const HeroSection = () => {
               >
                 <motion.img
                   src={slides[0]?.image || heroInstitute}
+                  srcSet={slides[0]?.srcSet}
+                  sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 520px"
                   alt="Clouds Trail Institute"
                   className="w-full max-w-md rounded-2xl shadow-2xl shadow-primary/20"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   animate={{ y: [0, -15, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 />
@@ -194,7 +238,16 @@ const HeroSection = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <img src={slides[currentSlide]?.image} alt={slides[currentSlide]?.title} className="w-full h-full object-cover" />
+              <img
+                src={slides[currentSlide]?.image}
+                srcSet={slides[currentSlide]?.srcSet}
+                sizes="100vw"
+                alt={slides[currentSlide]?.title}
+                className="w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+              />
               <div className="absolute inset-0 bg-foreground/60" />
             </motion.div>
           </AnimatePresence>
@@ -241,7 +294,16 @@ const HeroSection = () => {
 
       {mode === "static" && (
         <div className="relative h-[500px] md:h-[550px]">
-          <img src={slides[0]?.image || heroInstitute} alt="Clouds Trail" className="w-full h-full object-cover" />
+          <img
+            src={slides[0]?.image || heroInstitute}
+            srcSet={slides[0]?.srcSet}
+            sizes="100vw"
+            alt="Clouds Trail"
+            className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
           <div className="absolute inset-0 bg-foreground/50" />
           <div className="absolute inset-0 flex items-center">
             <div className="container">

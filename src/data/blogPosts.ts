@@ -1,9 +1,9 @@
-import blogCloudComputing from "@/assets/blog/cloud-computing.jpg";
-import blogDataScience from "@/assets/blog/data-science.jpg";
-import blogCyberSecurity from "@/assets/blog/cyber-security.jpg";
-import blogFullStack from "@/assets/blog/full-stack.jpg";
-import blogDevops from "@/assets/blog/devops.jpg";
-import blogDataAnalytics from "@/assets/blog/data-analytics.jpg";
+import blogCloudComputing from "@/assets/blog/cloud-computing.webp";
+import blogDataScience from "@/assets/blog/data-science.webp";
+import blogCyberSecurity from "@/assets/blog/cyber-security.webp";
+import blogFullStack from "@/assets/blog/full-stack.webp";
+import blogDevops from "@/assets/blog/devops.webp";
+import blogDataAnalytics from "@/assets/blog/data-analytics.webp";
 
 export interface BlogPost {
   slug: string;

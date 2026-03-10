@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMarkdownToBlocks } from "@/lib/blog-content";
 import { cn } from "@/lib/utils";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 type BlockStyle = {
   size?: "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
@@ -105,10 +106,13 @@ const renderMarkdownContent = (content: string) => {
           return (
             <figure key={idx} className="my-8 overflow-hidden rounded-2xl border border-border/70 bg-card/70">
               <img
-                src={block.src}
+                src={getOptimizedImageUrl(block.src, { width: 1280 })}
+                srcSet={getOptimizedImageSrcSet(block.src)}
+                sizes="(max-width: 768px) 100vw, 980px"
                 alt={block.alt || "Blog image"}
                 className="max-h-[460px] w-full object-cover"
                 loading="lazy"
+                decoding="async"
               />
               {block.alt ? <figcaption className="px-4 py-3 text-xs text-muted-foreground">{block.alt}</figcaption> : null}
             </figure>
@@ -193,7 +197,15 @@ const renderStyledBlocks = (blocks: TypographyBlock[]) => (
       if (block.type === "image" && block.url) {
         return (
           <figure key={idx} className="my-8 overflow-hidden rounded-2xl border border-border/70 bg-card/70">
-            <img src={block.url} alt={block.alt || "Blog image"} className="max-h-[460px] w-full object-cover" loading="lazy" />
+            <img
+              src={getOptimizedImageUrl(block.url, { width: 1280 })}
+              srcSet={getOptimizedImageSrcSet(block.url)}
+              sizes="(max-width: 768px) 100vw, 980px"
+              alt={block.alt || "Blog image"}
+              className="max-h-[460px] w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
             {block.alt ? <figcaption className="px-4 py-3 text-xs text-muted-foreground">{block.alt}</figcaption> : null}
           </figure>
         );
@@ -345,7 +357,15 @@ const BlogPost = () => {
             >
               {image ? (
                 <div className="overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl shadow-slate-950/20 backdrop-blur-lg">
-                  <img src={image} alt={title} className="h-52 w-full object-cover sm:h-60 md:h-64" loading="lazy" />
+                  <img
+                    src={getOptimizedImageUrl(image, { width: 960 })}
+                    srcSet={getOptimizedImageSrcSet(image)}
+                    sizes="(max-width: 1024px) 100vw, 520px"
+                    alt={title}
+                    className="h-52 w-full object-cover sm:h-60 md:h-64"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
               ) : (
                 <div className="flex h-52 items-center justify-center rounded-3xl border border-white/20 bg-gradient-to-br from-cyan-500/25 to-sky-500/10 sm:h-60 md:h-64">

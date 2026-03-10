@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { blogPosts } from "@/data/blogPosts";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 type BlogCard = {
   slug: string;
@@ -138,7 +139,17 @@ const LatestBlogsSection = () => {
                 >
                   <div className={`bg-card rounded-xl border overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 h-full ${isCenter ? "shadow-primary/20" : ""}`}>
                     <Link to={`/blog/${post.slug}`} className="block">
-                      {post.image ? <img src={post.image} alt={post.title} className="w-full h-40 object-cover" loading="lazy" /> : null}
+                      {post.image ? (
+                        <img
+                          src={getOptimizedImageUrl(post.image, { width: 720 })}
+                          srcSet={getOptimizedImageSrcSet(post.image, [320, 480, 640, 768])}
+                          sizes="(max-width: 640px) 88vw, (max-width: 1024px) 320px, 288px"
+                          alt={post.title}
+                          className="w-full h-40 object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : null}
                       <div className="p-5">
                         <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-primary bg-accent px-2 py-1 rounded-full mb-3">
                           {post.category}

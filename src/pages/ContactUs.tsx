@@ -10,6 +10,7 @@ import { ArrowRight, Clock3, Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 const ContactUs = () => {
   const { data: pageData } = useQuery({
@@ -138,7 +139,15 @@ const ContactUs = () => {
 
         {heroImage ? (
           <div className="pointer-events-none absolute bottom-0 right-0 hidden h-32 w-64 overflow-hidden rounded-tl-3xl border-l border-t border-white/20 bg-black/20 md:block">
-            <img src={heroImage} alt={pageTitle} className="h-full w-full object-cover opacity-60" loading="lazy" />
+            <img
+              src={getOptimizedImageUrl(heroImage, { width: 640 })}
+              srcSet={getOptimizedImageSrcSet(heroImage, [320, 480, 640, 768])}
+              sizes="256px"
+              alt={pageTitle}
+              className="h-full w-full object-cover opacity-60"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         ) : null}
       </section>

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 interface Program {
   id: string;
@@ -88,7 +89,15 @@ const TrendingPrograms = () => {
                   <div className={`bg-card border rounded-xl overflow-hidden shadow-lg ${isCenter ? "shadow-primary/20" : ""} transition-shadow`}>
                     <div className="h-40 bg-gradient-to-br from-primary/20 to-accent overflow-hidden">
                       {prog.image_url ? (
-                        <img src={prog.image_url} alt={prog.title} className="w-full h-full object-cover" />
+                        <img
+                          src={getOptimizedImageUrl(prog.image_url, { width: 820 })}
+                          srcSet={getOptimizedImageSrcSet(prog.image_url)}
+                          sizes="(max-width: 768px) 90vw, 288px"
+                          alt={prog.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-primary/40 text-4xl font-heading font-bold">
                           {prog.title.charAt(0)}

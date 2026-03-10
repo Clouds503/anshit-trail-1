@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 const ProgramsSection = () => {
   const [programs, setPrograms] = useState<any[]>([]);
@@ -35,7 +36,15 @@ const ProgramsSection = () => {
               >
                 <div className="relative h-44 overflow-hidden bg-gradient-to-br from-primary/20 to-accent">
                   {program.image_url ? (
-                    <img src={program.image_url} alt={program.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img
+                      src={getOptimizedImageUrl(program.image_url, { width: 900 })}
+                      srcSet={getOptimizedImageSrcSet(program.image_url)}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      alt={program.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-primary/30 text-5xl font-heading font-bold">
                       {program.title.charAt(0)}

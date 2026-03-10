@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from "@/lib/image-optimizer";
 
 interface PageHeroProps {
   title: string;
@@ -211,7 +212,16 @@ const PageHero = ({ title, subtitle, imageUrl, variant = "default" }: PageHeroPr
 
   return (
     <div className="relative h-[280px] md:h-[340px] overflow-hidden">
-      <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+      <img
+        src={getOptimizedImageUrl(imageUrl, { width: 1440 })}
+        srcSet={getOptimizedImageSrcSet(imageUrl)}
+        sizes="100vw"
+        alt={title}
+        className="w-full h-full object-cover"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+      />
       <div className="absolute inset-0 bg-foreground/60" />
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
