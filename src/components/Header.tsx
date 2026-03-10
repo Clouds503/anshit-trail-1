@@ -51,28 +51,31 @@ const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: navLinks } = useQuery({
+  const { data: navLinks, isError: navLinksError } = useQuery({
     queryKey: ["header_links"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("header_links")
         .select("label,href,is_highlight")
         .eq("is_active", true)
         .order("sort_order");
-      return data?.length ? (data as HeaderLink[]) : null;
+      if (error) throw error;
+      return (data || []) as HeaderLink[];
     },
     refetchOnMount: "always",
   });
 
-  const { data: headerContacts } = useQuery({
+  const { data: headerContacts, isError: headerContactsError } = useQuery({
     queryKey: ["header_contacts"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("header_contacts")
         .select("contact_type,label,value,href")
         .eq("is_active", true)
-        .order("sort_order");
-      return data?.length ? (data as HeaderContact[]) : null;
+        .order("sort_order")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as HeaderContact[];
     },
     refetchOnMount: "always",
   });
@@ -80,10 +83,11 @@ const Header = () => {
   const { data: branding } = useQuery({
     queryKey: ["site_branding_header"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("site_settings")
         .select("key,value")
         .in("key", ["site_title", "header_logo_height"]);
+      if (error) throw error;
 
       const map: Record<string, unknown> = {};
       for (const row of data || []) map[`${row.key || ""}`] = row.value;
@@ -131,11 +135,11 @@ const Header = () => {
     };
   }, [queryClient]);
 
-  const links = navLinks?.length ? navLinks : fallbackNavLinks;
-  const contacts = headerContacts?.length ? headerContacts : fallbackContacts;
-  const phoneContact = contacts.find((c) => c.contact_type === "phone") || fallbackContacts[0];
-  const ctaContact = contacts.find((c) => c.contact_type === "cta") || fallbackContacts[1];
-  const normalizedCtaHref = normalizeInternalRouteHref(ctaContact.href || "/");
+  const links = navLinksError ? fallbackNavLinks : (navLinks || []);
+  const contacts = headerContactsError ? fallbackContacts : (headerContacts || []);
+  const phoneContact = contacts.find((c) => c.contact_type === "phone") || (headerContactsError ? fallbackContacts[0] : null);
+  const ctaContact = contacts.find((c) => c.contact_type === "cta") || (headerContactsError ? fallbackContacts[1] : null);
+  const normalizedCtaHref = ctaContact ? normalizeInternalRouteHref(ctaContact.href || "/") : null;
   const siteTitle = branding?.siteTitle || "Clouds Trail";
   const headerLogoHeight = branding?.headerLogoHeight || 40;
 
@@ -163,18 +167,22 @@ const Header = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <SocialLinks placement="header" variant="header" className="mr-1" />
-          <a href={phoneContact.href || `tel:${phoneContact.value.replace(/\s+/g, "")}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <Phone className="h-4 w-4" /> {phoneContact.value}
-          </a>
-          {isInternalRouteHref(normalizedCtaHref) ? (
-            <Link to={normalizedCtaHref}>
-              <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
-            </Link>
-          ) : (
-            <a href={normalizedCtaHref}>
-              <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
+          {phoneContact ? (
+            <a href={phoneContact.href || `tel:${(phoneContact.value || "").replace(/\s+/g, "")}`} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Phone className="h-4 w-4" /> {phoneContact.value}
             </a>
-          )}
+          ) : null}
+          {ctaContact && normalizedCtaHref ? (
+            isInternalRouteHref(normalizedCtaHref) ? (
+              <Link to={normalizedCtaHref}>
+                <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
+              </Link>
+            ) : (
+              <a href={normalizedCtaHref}>
+                <Button className="bg-primary text-primary-foreground font-semibold px-6 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
+              </a>
+            )
+          ) : null}
         </div>
 
         <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -197,15 +205,17 @@ const Header = () => {
                 })(),
               )}
               <SocialLinks placement="header" variant="header" className="pt-2" />
-              {isInternalRouteHref(normalizedCtaHref) ? (
-                <Link to={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
-                </Link>
-              ) : (
-                <a href={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
-                </a>
-              )}
+              {ctaContact && normalizedCtaHref ? (
+                isInternalRouteHref(normalizedCtaHref) ? (
+                  <Link to={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
+                    <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
+                  </Link>
+                ) : (
+                  <a href={normalizedCtaHref} onClick={() => setMobileOpen(false)}>
+                    <Button className="w-full bg-primary text-primary-foreground font-semibold mt-2 rounded-lg">{ctaContact.label || ctaContact.value || "LMS"}</Button>
+                  </a>
+                )
+              ) : null}
             </nav>
           </motion.div>
         )}

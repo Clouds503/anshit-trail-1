@@ -50,7 +50,7 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { data: rows, error } = await (supabase as any).from(tableName).select("*").order(orderBy, { ascending });
-    if (error) toast.error("Failed to fetch data");
+    if (error) toast.error(`Failed to fetch data: ${error.message || "Unknown error"}`);
     else setData(rows || []);
     setLoading(false);
   }, [tableName, orderBy, ascending]);
@@ -95,10 +95,25 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
   };
 
   const handleSave = async () => {
+    const missingRequiredField = formFields.find((f) => {
+      if (!f.required) return false;
+      const raw = form[f.key];
+      if (f.type === "boolean") return false;
+      if (f.type === "multiselect") return !Array.isArray(raw) || raw.length === 0;
+      if (f.type === "array" && Array.isArray(raw)) return raw.length === 0;
+      return !`${raw ?? ""}`.trim();
+    });
+
+    if (missingRequiredField) {
+      toast.error(`${missingRequiredField.label} is required.`);
+      return;
+    }
+
     setSaving(true);
     const payload: Record<string, any> = {};
     formFields.forEach((f) => {
       let val = form[f.key];
+      if (typeof val === "string") val = val.trim();
       if (f.type === "number") val = Number(val) || 0;
       if (f.type === "array" && typeof val === "string") val = val.split(",").map((s: string) => s.trim()).filter(Boolean);
       if (f.type === "multiselect") {
@@ -150,34 +165,42 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
     }
 
     let savedRow: any = null;
-    if (editItem) {
-      const { data, error } = await (supabase as any)
+    const existingContactOfType =
+      !editItem && tableName === "header_contacts" && payload.contact_type
+        ? data.find((row) => `${row.contact_type}` === `${payload.contact_type}`)
+        : null;
+    const updateId = editItem?.id || existingContactOfType?.id;
+    let saveError: any = null;
+
+    if (updateId) {
+      const { data: updatedData, error } = await (supabase as any)
         .from(tableName)
         .update(payload)
-        .eq("id", editItem.id)
+        .eq("id", updateId)
         .select()
         .single();
-      if (error) toast.error("Failed to update");
-      else {
-        toast.success("Updated successfully");
-        savedRow = data;
-      }
+      saveError = error;
+      savedRow = updatedData;
     } else {
-      const { data, error } = await (supabase as any)
+      const { data: insertedData, error } = await (supabase as any)
         .from(tableName)
         .insert(payload)
         .select()
         .single();
-      if (error) toast.error("Failed to create: " + error.message);
-      else {
-        toast.success("Created successfully");
-        savedRow = data;
-      }
+      saveError = error;
+      savedRow = insertedData;
     }
 
+    if (saveError) {
+      toast.error(`Failed to save: ${saveError.message || "Unknown error"}`);
+      setSaving(false);
+      return;
+    }
+
+    toast.success(updateId ? "Updated successfully" : "Created successfully");
     setSaving(false);
     setDialogOpen(false);
-    fetchData();
+    await fetchData();
     queryClient.invalidateQueries({ queryKey: [tableName] });
 
     if (tableName === "header_links" || tableName === "header_contacts") {
@@ -207,10 +230,13 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
   const handleDelete = async () => {
     if (!deleteId) return;
     const { error } = await (supabase as any).from(tableName).delete().eq("id", deleteId);
-    if (error) toast.error("Failed to delete");
-    else toast.success("Deleted successfully");
+    if (error) {
+      toast.error(`Failed to delete: ${error.message || "Unknown error"}`);
+      return;
+    }
+    toast.success("Deleted successfully");
     setDeleteId(null);
-    fetchData();
+    await fetchData();
     queryClient.invalidateQueries({ queryKey: [tableName] });
     if (tableName === "header_links" || tableName === "header_contacts") {
       queryClient.invalidateQueries({ queryKey: ["header_links"] });
@@ -302,7 +328,7 @@ const CrudTable = ({ title, tableName, fields, orderBy = "created_at", ascending
       ) : data.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground">No items yet. Click "Add New" to create one.</div>
       ) : (
-        <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="overflow-x-auto rounded-lg border bg-card">
           <Table className="min-w-[640px]">
             <TableHeader>
               <TableRow>
